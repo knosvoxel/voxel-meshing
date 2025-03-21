@@ -30,12 +30,8 @@ int main()
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
    // glfw window creation
-   GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", nullptr,nullptr);
+   GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Voxel Meshing", nullptr,nullptr);
    if(window == nullptr)
    {
       std::cout << "Failed to create GLFW window" << std::endl;
@@ -54,7 +50,7 @@ int main()
 
    // configure global opengl state
    // -------------------------------------------
-   glEnable(GL_DEPTH_TEST);
+   //glEnable(GL_DEPTH_TEST);
 
 
    // build and compile our shader program

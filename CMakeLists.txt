@@ -1,6 +1,6 @@
 # Project definition
-cmake_minimum_required(VERSION 3.1)
-project(OpenGL-Project-Template)
+cmake_minimum_required(VERSION 4.0)
+project(voxel-meshing)
 
 # Source files
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
