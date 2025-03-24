@@ -55,7 +55,7 @@ int main()
 
    // build and compile our shader program
    // ---------------------------------------
-   Shader ourShader("../shaders/learnopengl/4.6.shader.vs", "../shaders/learnopengl/4.6.shader.fs");
+   Shader ourShader("../shaders/shader.vs", "../shaders/shader.fs");
    
    // set up vertex data (and buffer(s)) and configure vertex attributes
    //-----------------------------------------------------------------
@@ -63,23 +63,27 @@ int main()
       // positions       // colors
       0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,// bottom right
      -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,// bottom left
-      0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,// top
+      0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,// top right
+      -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,// top left
+      0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,// top right
+      -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f// bottom left
    };
 
    unsigned int VBO, VAO;
-   glGenVertexArrays(1, &VAO);
    glGenBuffers(1, &VBO);
+   glGenVertexArrays(1, &VAO);
    // bind the Vertes Arrays Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
    glBindVertexArray(VAO);
 
-   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+   glBindBuffer(GL_ARRAY_BUFFER, VBO); // binds VBO to be used for calls on the GL_ARRAY_BUFFER target
+   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // copies vertex data into the buffer's memory
+   // TODO: Maybe change GL_STATIC_DRAW to GL_DYNAMIC_DRAW if a lot of changes in the vertices should occur
 
-   // position attribute
+   // position attribute in the vertex shader
    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
    glEnableVertexAttribArray(0);
 
-   // color atribute
+   // color atribute in the vertex shader
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
    glEnableVertexAttribArray(1);
 
@@ -94,14 +98,14 @@ int main()
       processInput(window);
       
       // render
-      glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
+      glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // color to use glClear with
+      glClear(GL_COLOR_BUFFER_BIT); // clears the color buffer "replacing" all pixels with the selected color
 
       ourShader.use();
 
       // draws the triangle
       glBindVertexArray(VAO); //not necessary here because we only have a single VAO but doing it anyway to keep things more organized
-      glDrawArrays(GL_TRIANGLES, 0, 3);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
       //glBindVertexArray(0); //no need to unbind it every time
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
