@@ -37,6 +37,7 @@ public:
 	GLFWwindow* handle;
 	glm::vec2 window_size;
 	
+	Shader mainShader;
 	Camera camera;
 	float lastX, lastY, deltaTime, lastFrame;
 	bool firstMouse = true;

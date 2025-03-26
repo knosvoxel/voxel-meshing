@@ -1,6 +1,7 @@
 #include "renderer.h"
 
-Shader* shaderMain;
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 unsigned int VBO, VAO;
 
@@ -48,8 +49,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_wireframe) {
 
    // build and compile our shader program
    // ---------------------------------------
-    Shader newShader("../shaders/shader.vs", "../shaders/shader.fs");
-    shaderMain = &newShader;
+    mainShader = Shader("../shaders/shader.vert", "../shaders/shader.frag");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
@@ -97,12 +97,21 @@ void Renderer::loop() {
         glClearColor(0.149f, 0.149f, 0.149f, 1.0f); // color to use glClear with
         glClear(GL_COLOR_BUFFER_BIT); // clears the color buffer "replacing" all pixels with the selected color
 
-        (*shaderMain).use();
+        mainShader.use();
+
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::rotate(trans, (float)glfwGetTime(),
+            glm::vec3(0.0f, 0.0f, 1.0f));
+
+        mainShader.setMat4("transform", trans);
 
         // draws the triangle
         glBindVertexArray(VAO); //not necessary here because we only have a single VAO but doing it anyway to keep things more organized
+
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
         //glBindVertexArray(0); //no need to unbind it every time
+
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         //------------------------------------------
