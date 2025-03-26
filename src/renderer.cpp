@@ -5,10 +5,10 @@ Shader* shaderMain;
 unsigned int VBO, VAO;
 
 // called every loop to check whether ESC is pressed. If that's the case the window closes
-void processInput(GLFWwindow* window)
+void Renderer::processInput()
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(handle, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(handle, true);
 }
 
 // checks whether the window has changed size to adjust the viewport too
@@ -91,7 +91,7 @@ void Renderer::loop() {
     while (!glfwWindowShouldClose(handle))
     {
         // input
-        processInput(handle);
+        processInput();
 
         // render
         glClearColor(0.149f, 0.149f, 0.149f, 1.0f); // color to use glClear with

@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 #include "shader/shader.h"
+#include "camera.h";
 
 class Renderer
 {
@@ -31,10 +32,14 @@ public:
 
 	void init(uint16_t size_x, uint16_t size_y, bool enable_wireframe = false);
 	void loop();
+	void processInput();
 
 	GLFWwindow* handle;
 	glm::vec2 window_size;
-	// camera
+	
+	Camera camera;
+	float lastX, lastY, deltaTime, lastFrame;
+	bool firstMouse = true;
 
 private:
 	Renderer() {};
