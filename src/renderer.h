@@ -6,6 +6,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+#include "shader/shader.h"
+
 class Renderer
 {
 public:
@@ -15,19 +17,24 @@ public:
 		return instance;
 	}
 
-	Renderer(Renderer const&) = delete;
-	void operator=(Renderer const&) = delete;
-
-	GLFWwindow* handle;
-	glm::vec2 window_size;
-
-	void init(uint16_t size_x, uint16_t size_y);
-	void loop();
-
 	~Renderer() {
 		handle = nullptr;
 		delete handle;
+
+		// glfw: terminate, clearing all previously allocated GLFW resources
+		//---------------------------------------------------
+		glfwTerminate();
 	}
+
+	Renderer(Renderer const&) = delete;
+	void operator=(Renderer const&) = delete;
+
+	void init(uint16_t size_x, uint16_t size_y, bool enable_wireframe = false);
+	void loop();
+
+	GLFWwindow* handle;
+	glm::vec2 window_size;
+	// camera
 
 private:
 	Renderer() {};
