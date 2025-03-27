@@ -7,8 +7,8 @@ public:
 	Scene();
 	~Scene();
 
-	void generate_mesh();
-	void render_mesh();
+	void generate_buffers();
+	void render();
 
 	unsigned int VBO, VAO;
 };

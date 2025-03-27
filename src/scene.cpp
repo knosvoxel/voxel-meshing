@@ -53,7 +53,7 @@ Scene::~Scene()
 	glDeleteBuffers(1, &VBO);
 }
 
-void Scene::generate_mesh()
+void Scene::generate_buffers()
 {
     glGenBuffers(1, &VBO);
     glGenVertexArrays(1, &VAO);
@@ -74,7 +74,7 @@ void Scene::generate_mesh()
     glEnableVertexAttribArray(1);
 }
 
-void Scene::render_mesh()
+void Scene::render()
 {
     // draws the triangle
     glBindVertexArray(VAO); //not necessary here because we only have a single VAO but doing it anyway to keep things more organized
