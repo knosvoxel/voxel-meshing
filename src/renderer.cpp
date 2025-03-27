@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-unsigned int VBO, VAO;
+static Renderer& renderer = Renderer::getInstance();
 
 // called every loop to check whether ESC is pressed. If that's the case the window closes
 void Renderer::processInput()
@@ -29,8 +29,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void mouse_callback(GLFWwindow* handle, double xposIn, double yposIn)
 {
-    Renderer& renderer = Renderer::getInstance();
-
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
 
@@ -99,78 +97,8 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_wireframe) {
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-    
-    //float vertices[]{
-    //    // positions       // colors
-    //    0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,// bottom right
-    //   -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,// bottom left
-    //    0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,// top right
-    //    -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,// top left
-    //    0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,// top right
-    //    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f// bottom left
-    //};
 
-    float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-    };
-
-    glGenBuffers(1, &VBO);
-    glGenVertexArrays(1, &VAO);
-    // bind the Vertes Arrays Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO); // binds VBO to be used for calls on the GL_ARRAY_BUFFER target
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // copies vertex data into the buffer's memory
-    // TODO: Maybe change GL_STATIC_DRAW to GL_DYNAMIC_DRAW if a lot of changes in the vertices should occur
-
-    // position attribute in the vertex shader
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    //// normal atribute in the vertex shader
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
+    currentScene.generate_mesh();
 
     // uncomment this call to draw in wireframe polygons.
     if (enable_wireframe) {
@@ -193,6 +121,7 @@ void Renderer::loop() {
         glClearColor(0.149f, 0.149f, 0.149f, 1.0f); // color to use glClear with
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clears the color buffer "replacing" all pixels with the selected color
 
+        // shader 
         mainShader.use();
 
         mainShader.setVec3("light_direction", 0.45f, -0.7f, 0.2f);
@@ -205,12 +134,8 @@ void Renderer::loop() {
         mainShader.setMat4("view", view);
         mainShader.setMat4("model", model);
 
-        // draws the triangle
-        glBindVertexArray(VAO); //not necessary here because we only have a single VAO but doing it anyway to keep things more organized
-
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        //glBindVertexArray(0); //no need to unbind it every time
+        // render object
+        currentScene.render_mesh();
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -218,9 +143,4 @@ void Renderer::loop() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
 }

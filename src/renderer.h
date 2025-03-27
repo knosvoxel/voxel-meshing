@@ -8,6 +8,7 @@
 
 #include "learnopengl/shader.h"
 #include "learnopengl/camera.h";
+#include "scene.h";
 
 class Renderer
 {
@@ -39,6 +40,8 @@ public:
 	
 	Shader mainShader;
 	Camera camera;
+	Scene currentScene;
+
 	float lastX, lastY, deltaTime, lastFrame;
 	bool firstMouse = true;
 
