@@ -7,7 +7,8 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 set(INCL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
-set(SOURCES "${SRC_DIR}/main.cpp" "${SRC_DIR}/renderer.cpp" "${SRC_DIR}/renderer.h" "${SRC_DIR}/camera.cpp" "${SRC_DIR}/camera.h")
+set(SOURCES "${SRC_DIR}/main.cpp" "${SRC_DIR}/renderer.cpp" "${SRC_DIR}/renderer.h" 
+"${INCL_DIR}/learnopengl/camera.cpp" "${INCL_DIR}/learnopengl/camera.h")
 
 # Executable definition and properties
 add_executable(${PROJECT_NAME} ${SOURCES})

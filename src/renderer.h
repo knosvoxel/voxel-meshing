@@ -6,8 +6,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "shader/shader.h"
-#include "camera.h";
+#include "learnopengl/shader.h"
+#include "learnopengl/camera.h";
 
 class Renderer
 {
@@ -19,8 +19,8 @@ public:
 	}
 
 	~Renderer() {
-		handle = nullptr;
-		delete handle;
+		window = nullptr;
+		delete window;
 
 		// glfw: terminate, clearing all previously allocated GLFW resources
 		//---------------------------------------------------
@@ -34,7 +34,7 @@ public:
 	void loop();
 	void processInput();
 
-	GLFWwindow* handle;
+	GLFWwindow* window;
 	glm::vec2 window_size;
 	
 	Shader mainShader;

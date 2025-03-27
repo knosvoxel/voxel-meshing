@@ -8,8 +8,8 @@ unsigned int VBO, VAO;
 // called every loop to check whether ESC is pressed. If that's the case the window closes
 void Renderer::processInput()
 {
-    if (glfwGetKey(handle, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(handle, true);
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 }
 
 // checks whether the window has changed size to adjust the viewport too
@@ -28,19 +28,21 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_wireframe) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // glfw window creation
-    handle = glfwCreateWindow(window_size.x, window_size.y, "Voxel Meshing", nullptr, nullptr);
-    if (handle == nullptr)
+    window = glfwCreateWindow(window_size.x, window_size.y, "Voxel Meshing", nullptr, nullptr);
+    if (window == nullptr)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
+        exit(-1);
     }
-    glfwMakeContextCurrent(handle);
-    glfwSetFramebufferSizeCallback(handle, framebuffer_size_callback);
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
+        exit(-1);
     }
 
     // configure global opengl state
@@ -88,7 +90,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_wireframe) {
 }
 
 void Renderer::loop() {
-    while (!glfwWindowShouldClose(handle))
+    while (!glfwWindowShouldClose(window))
     {
         // input
         processInput();
@@ -115,7 +117,7 @@ void Renderer::loop() {
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         //------------------------------------------
-        glfwSwapBuffers(handle);
+        glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
