@@ -36,12 +36,8 @@ void Chunk::generate_buffers()
 
     std::vector<Vertex> buffer;
 
-    const ogt_vox_scene* voxScene = load_vox_scene_with_groups("../res/vox/castle.vox");
+    const ogt_vox_scene* voxScene = load_vox_scene_with_groups("../res/vox/32x32x32.vox");
 
-    for (uint32_t model_index = 0; model_index < voxScene->num_models; model_index++) {
-        const ogt_vox_model* voxModel = voxScene->models[model_index];
-        std::cout << voxModel << " " << model_index << std::endl;
-    }
     const ogt_vox_model* voxModel = voxScene->models[0];
     uint32_t voxel_index = 0;
 
@@ -110,8 +106,6 @@ void Chunk::generate_buffers()
             }
         }
     }
-     
-    std::cout << "Buffer Size: " << buffer.size() << std::endl;
 
     glBufferData(GL_ARRAY_BUFFER, buffer.size() * sizeof(Vertex), &buffer[0], GL_STATIC_DRAW); // copies vertex data into the buffer's memory
     // TODO: Maybe change GL_STATIC_DRAW to GL_DYNAMIC_DRAW if a lot of changes in the vertices should occur
