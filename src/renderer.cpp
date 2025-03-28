@@ -5,6 +5,14 @@
 
 static Renderer& renderer = Renderer::getInstance();
 
+// Camera settings
+const float NEAR = 0.1f;
+const float FAR = 1000.0f;
+
+glm::vec3 cam_pos(-30.0f, 35.0f, -30.0f);
+float yaw = 45.0f;
+float pitch = -20.0f;
+
 // called every loop to check whether ESC is pressed. If that's the case the window closes
 void Renderer::processInput()
 {
@@ -85,7 +93,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_wireframe) {
     glEnable(GL_FRONT); // Cull front faces
     glFrontFace(GL_CW);
 
-    camera = Camera(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f);
+    camera = Camera(cam_pos, glm::vec3(0.0f, 1.0f, 0.0f), yaw, pitch);
     lastX = window_size.x / 2.0f;
     lastY = window_size.y / 2.0f;
     deltaTime = 0.0f;
@@ -98,7 +106,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_wireframe) {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
 
-    chunk = Chunk(glm::vec3(16, 16, 16));
+    chunk = Chunk(glm::vec3(64, 64, 64));
     chunk.generate_buffers();
 
     // uncomment this call to draw in wireframe polygons.
@@ -128,7 +136,7 @@ void Renderer::loop() {
         mainShader.setVec3("light_direction", 0.45f, -0.7f, 0.2f);
         mainShader.setVec3("color", 1.0f, 1.0f, 1.0f);
 
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)window_size.x / (float)window_size.y, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)window_size.x / (float)window_size.y, NEAR, FAR);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model = glm::mat4(1.0f);
         mainShader.setMat4("projection", projection);
@@ -137,7 +145,6 @@ void Renderer::loop() {
 
         // render object
         chunk.render();
-
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         //------------------------------------------

@@ -8,7 +8,7 @@
 
 #include "learnopengl/shader.h"
 #include "learnopengl/camera.h";
-#include "scene.h";
+#include "chunk.h";
 
 class Renderer
 {
