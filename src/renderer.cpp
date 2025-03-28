@@ -98,7 +98,8 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_wireframe) {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
 
-    currentScene.generate_buffers();
+    chunk = Chunk(glm::vec3(16, 16, 16));
+    chunk.generate_buffers();
 
     // uncomment this call to draw in wireframe polygons.
     if (enable_wireframe) {
@@ -135,7 +136,7 @@ void Renderer::loop() {
         mainShader.setMat4("model", model);
 
         // render object
-        currentScene.render();
+        chunk.render();
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

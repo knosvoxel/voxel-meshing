@@ -40,7 +40,7 @@ public:
 	
 	Shader mainShader;
 	Camera camera;
-	Scene currentScene;
+	Chunk chunk;
 
 	float lastX, lastY, deltaTime, lastFrame;
 	bool firstMouse = true;
