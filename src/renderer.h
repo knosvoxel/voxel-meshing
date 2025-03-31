@@ -31,7 +31,7 @@ public:
 	Renderer(Renderer const&) = delete;
 	void operator=(Renderer const&) = delete;
 
-	void init(uint16_t size_x, uint16_t size_y, bool enable_wireframe = false);
+	void init(uint16_t size_x, uint16_t size_y, bool enable_vsync = true, bool enable_wireframe = false);
 	void loop();
 	void processInput();
 

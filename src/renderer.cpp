@@ -56,7 +56,7 @@ void mouse_callback(GLFWwindow* handle, double xposIn, double yposIn)
     renderer.camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_wireframe) {
+void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool enable_wireframe) {
     window_size = glm::vec2(size_x, size_y);
 
     // glfw: initialize and configure
@@ -78,6 +78,10 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_wireframe) {
     glfwSetCursorPosCallback(window, mouse_callback);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    if (!enable_vsync) {
+        glfwSwapInterval(0);
+    }
 
     // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -124,8 +128,6 @@ void Renderer::loop() {
         lastFrame = currentFrame;
 
         std::cout << deltaTime * 1000.0f << " ms (FPS " << 1.0f / deltaTime << ")" << std::endl;
-
-            //"Frametime: %.3f ms (FPS %.1f)"
 
         // input
         processInput();
