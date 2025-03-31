@@ -13,6 +13,7 @@ void main()
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(-light_direction);
     float diff = max(dot(norm, lightDir), 0.0);
+
     vec3 result = diff * Color;
 
     FragColor = vec4(result, 1.0f);

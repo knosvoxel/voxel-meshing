@@ -123,6 +123,10 @@ void Renderer::loop() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        std::cout << deltaTime * 1000.0f << " ms (FPS " << 1.0f / deltaTime << ")" << std::endl;
+
+            //"Frametime: %.3f ms (FPS %.1f)"
+
         // input
         processInput();
 
@@ -133,15 +137,15 @@ void Renderer::loop() {
         // shader 
         mainShader.use();
 
-        mainShader.setVec3("light_direction", 0.45f, -0.7f, 0.2f);
-        mainShader.setVec3("color", 1.0f, 1.0f, 1.0f);
-
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)window_size.x / (float)window_size.y, NEAR, FAR);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model = glm::mat4(1.0f);
         mainShader.setMat4("projection", projection);
         mainShader.setMat4("view", view);
         mainShader.setMat4("model", model);
+
+        mainShader.setVec3("light_direction", 0.45f, -0.7f, 0.2f);
+        mainShader.setVec3("color", 1.0f, 1.0f, 1.0f);
 
         // render object
         chunk.render();
