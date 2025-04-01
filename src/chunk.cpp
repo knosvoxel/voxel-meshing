@@ -115,7 +115,7 @@ void Chunk::generate_buffers()
     glVertexArrayAttribBinding(vao, 2, 0);
     glVertexArrayAttribFormat(vao, 2, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat));
 
-    glVertexArrayVertexBuffer(vao, 0, vbo, 0, 9 * sizeof(GLfloat)); // copies vertex data into the buffer's memory
+    glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex)); // copies vertex data into the buffer's memory
 
     delete[] voxScene;
 }

@@ -5,7 +5,7 @@
 
 #include <vector>
 
-// holds data of a voxel mesh
+// holds data of a voxel mesh and logic to render it
 class Chunk {
 public:
 	Chunk() {};
