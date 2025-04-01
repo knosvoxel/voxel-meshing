@@ -105,7 +105,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
 
    // build and compile our shader program
    // ---------------------------------------
-    mainShader = Shader("../shaders/shader.vert", "../shaders/shader.frag");
+    mainShader = Shader("../shaders/main.vert", "../shaders/main.frag");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
