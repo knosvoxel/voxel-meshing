@@ -7,7 +7,7 @@ static Renderer& renderer = Renderer::getInstance();
 
 // Camera settings
 const float NEAR = 0.1f;
-const float FAR = 1000.0f;
+const float FAR = 100.0f;
 
 glm::vec3 cam_pos(-30.0f, 35.0f, -30.0f);
 float yaw = 45.0f;
@@ -93,9 +93,15 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     // configure global opengl state
     // -------------------------------------------
     glEnable(GL_DEPTH_TEST);
+   
     glEnable(GL_CULL_FACE); // Enable culling
     glEnable(GL_FRONT); // Cull front faces
     glFrontFace(GL_CW);
+
+    glEnable(GL_BLEND);
+
+    //glDepthFunc(GL_ALWAYS);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     camera = Camera(cam_pos, glm::vec3(0.0f, 1.0f, 0.0f), yaw, pitch);
     lastX = window_size.x / 2.0f;
@@ -110,7 +116,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
 
-    chunk = Chunk(glm::vec3(64, 64, 64));
+    chunk = Chunk();
     chunk.generate_buffers();
 
     // uncomment this call to draw in wireframe polygons.
