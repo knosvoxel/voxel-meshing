@@ -98,10 +98,10 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     glEnable(GL_FRONT); // Cull front faces
     glFrontFace(GL_CW);
 
-    glEnable(GL_BLEND);
-
+    // overdraw debug visuals
+    //glEnable(GL_BLEND);
     //glDepthFunc(GL_ALWAYS);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     camera = Camera(cam_pos, glm::vec3(0.0f, 1.0f, 0.0f), yaw, pitch);
     lastX = window_size.x / 2.0f;
