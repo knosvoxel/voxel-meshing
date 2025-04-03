@@ -39,12 +39,13 @@ void Chunk::generate_buffers()
             for (uint32_t x = 0; x < size_x; x++, voxel_index++)
             {
                 uint32_t color_index = voxModel->voxel_data[voxel_index];
-                ogt_vox_rgba color = voxScene->palette.color[color_index];
                 bool is_voxel_solid = (color_index != 0);
 
                 if (!is_voxel_solid) {
                     continue;
                 }
+
+                ogt_vox_rgba color = voxScene->palette.color[color_index];
 
                 glm::vec3 voxel_pos(x, y, z);
                 glm::vec3 vertex_color(float(color.r), float(color.g), float(color.b));

@@ -4,11 +4,18 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "learnopengl/shader.h"
 #include "learnopengl/camera.h";
 #include "chunk.h";
+
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 class Renderer
 {
@@ -22,6 +29,10 @@ public:
 	~Renderer() {
 		window = nullptr;
 		delete window;
+
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
 
 		// glfw: terminate, clearing all previously allocated GLFW resources
 		//---------------------------------------------------

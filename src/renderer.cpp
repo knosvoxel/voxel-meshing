@@ -1,8 +1,5 @@
 #include "renderer.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 static Renderer& renderer = Renderer::getInstance();
 
 // Camera settings
@@ -56,6 +53,19 @@ void mouse_callback(GLFWwindow* handle, double xposIn, double yposIn)
     renderer.camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
+void imgui_render() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("Performance");
+    ImGui::Text("Frametime: %.3f ms (FPS %.1f)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
 void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool enable_wireframe) {
     window_size = glm::vec2(size_x, size_y);
 
@@ -103,6 +113,19 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     //glDepthFunc(GL_ALWAYS);
     //glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 
+    // Setup Dear ImGui context
+    // -------------------------------------------
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);// Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+    ImGui_ImplOpenGL3_Init();
+
+    // camera setup
+    // -------------------------------------------
     camera = Camera(cam_pos, glm::vec3(0.0f, 1.0f, 0.0f), yaw, pitch);
     lastX = window_size.x / 2.0f;
     lastY = window_size.y / 2.0f;
@@ -133,8 +156,6 @@ void Renderer::loop() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        std::cout << deltaTime * 1000.0f << " ms (FPS " << 1.0f / deltaTime << ")" << std::endl;
-
         // input
         processInput();
 
@@ -159,6 +180,8 @@ void Renderer::loop() {
 
         // render object
         chunk.render();
+
+        imgui_render();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         //------------------------------------------
