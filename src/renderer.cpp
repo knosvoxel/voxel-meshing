@@ -4,7 +4,7 @@ static Renderer& renderer = Renderer::getInstance();
 
 // Camera settings
 const float NEAR = 0.1f;
-const float FAR = 100.0f;
+const float FAR = 1000.0f;
 
 glm::vec3 cam_pos(-30.0f, 35.0f, -30.0f);
 float yaw = 45.0f;
