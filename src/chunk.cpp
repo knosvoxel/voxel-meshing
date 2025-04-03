@@ -45,9 +45,9 @@ void Chunk::generate_buffers()
                     continue;
                 }
 
-                ogt_vox_rgba color = voxScene->palette.color[color_index];
-
                 glm::vec3 voxel_pos(x, y, z);
+
+                ogt_vox_rgba color = voxScene->palette.color[color_index];
                 glm::vec3 vertex_color(float(color.r), float(color.g), float(color.b));
                 vertex_color /= 255.0f;
 
