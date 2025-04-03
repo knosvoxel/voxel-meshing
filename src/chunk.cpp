@@ -50,14 +50,14 @@ void Chunk::generate_buffers()
                 glm::vec3 vertex_color(float(color.r), float(color.g), float(color.b));
                 vertex_color /= 255.0f;
 
-                glm::vec3 neigh_minus_z(x, y, z - 1.0);
-                bool add_minus_z = (neigh_minus_z.z < 0.0);
-                if (!add_minus_z) {
-                    uint32_t minus_z_index = (neigh_minus_z.y * size_z * size_x) + (neigh_minus_z.z * size_x) + neigh_minus_z.x;
-                    add_minus_z = (voxModel->voxel_data[minus_z_index] == 0);
+                glm::vec3 neigh_z0(x, y, z - 1.0);
+                bool add_z0 = (neigh_z0.z < 0.0);
+                if (!add_z0) {
+                    uint32_t z0_index = (neigh_z0.y * size_z * size_x) + (neigh_z0.z * size_x) + neigh_z0.x;
+                    add_z0 = (voxModel->voxel_data[z0_index] == 0);
                 }
 
-                if (add_minus_z) {
+                if (add_z0) {
                     glm::vec3 normal(0.0f, 0.0f, -1.0f);
 
                     buffer.push_back(Vertex{ voxel_pos + glm::vec3(0.0f, 0.0f, 0.0f), normal, vertex_color });
@@ -70,14 +70,14 @@ void Chunk::generate_buffers()
                     vertex_count += 6;
                 }
 
-                glm::vec3 neigh_plus_z(x, y, z + 1.0);
-                bool add_plus_z = (neigh_plus_z.z >= size_z);
-                if (!add_plus_z) {
-                    uint32_t plus_z_index = (neigh_plus_z.y * size_z * size_x) + (neigh_plus_z.z * size_x) + neigh_plus_z.x;
-                    add_plus_z = (voxModel->voxel_data[plus_z_index] == 0);
+                glm::vec3 neigh_z1(x, y, z + 1.0);
+                bool add_z1 = (neigh_z1.z >= size_z);
+                if (!add_z1) {
+                    uint32_t z1_index = (neigh_z1.y * size_z * size_x) + (neigh_z1.z * size_x) + neigh_z1.x;
+                    add_z1 = (voxModel->voxel_data[z1_index] == 0);
                 }
 
-                if (add_plus_z) {
+                if (add_z1) {
                     glm::vec3 normal(0.0f, 0.0f, 1.0f);
 
                     buffer.push_back(Vertex{ glm::vec3(0.0f, 0.0f, 1.0f) + voxel_pos, normal, vertex_color });
@@ -90,14 +90,14 @@ void Chunk::generate_buffers()
                     vertex_count += 6;
                 }
 
-                glm::vec3 neigh_minus_x(x - 1.0, y, z);
-                bool add_minus_x = (neigh_minus_x.x < 0.0);
-                if (!add_minus_x) {
-                    uint32_t minus_x_index = (neigh_minus_x.y * size_z * size_x) + (neigh_minus_x.z * size_x) + neigh_minus_x.x;
-                    add_minus_x = (voxModel->voxel_data[minus_x_index] == 0);
+                glm::vec3 neigh_x0(x - 1.0, y, z);
+                bool add_x0 = (neigh_x0.x < 0.0);
+                if (!add_x0) {
+                    uint32_t x0_index = (neigh_x0.y * size_z * size_x) + (neigh_x0.z * size_x) + neigh_x0.x;
+                    add_x0 = (voxModel->voxel_data[x0_index] == 0);
                 }
 
-                if (add_minus_x) {
+                if (add_x0) {
                     glm::vec3 normal(-1.0f, 0.0f, 0.0f);
 
                     buffer.push_back(Vertex{ glm::vec3(0.0f,  1.0f,  1.0f) + voxel_pos, normal, vertex_color });
@@ -110,14 +110,14 @@ void Chunk::generate_buffers()
                     vertex_count += 6;
                 }
 
-                glm::vec3 neigh_plus_x(x + 1.0, y, z);
-                bool add_plus_x = (neigh_plus_x.x >= size_x);
-                if (!add_plus_x) {
-                    uint32_t plus_x_index = (neigh_plus_x.y * size_z * size_x) + (neigh_plus_x.z * size_x) + neigh_plus_x.x;
-                    add_plus_x = (voxModel->voxel_data[plus_x_index] == 0);
+                glm::vec3 neigh_x1(x + 1.0, y, z);
+                bool add_x1 = (neigh_x1.x >= size_x);
+                if (!add_x1) {
+                    uint32_t x1_index = (neigh_x1.y * size_z * size_x) + (neigh_x1.z * size_x) + neigh_x1.x;
+                    add_x1 = (voxModel->voxel_data[x1_index] == 0);
                 }
 
-                if (add_plus_x) {
+                if (add_x1) {
                     glm::vec3 normal(1.0f, 0.0f, 0.0f);
 
                     buffer.push_back(Vertex{ glm::vec3(1.0f, 1.0f, 1.0f) + voxel_pos, normal, vertex_color });
@@ -130,14 +130,14 @@ void Chunk::generate_buffers()
                     vertex_count += 6;
                 }
 
-                glm::vec3 neigh_minus_y(x, y - 1.0, z);
-                bool add_minus_y = (neigh_minus_y.y < 0.0);
-                if (!add_minus_y) {
-                    uint32_t minus_y_index = (neigh_minus_y.y * size_z * size_x) + (neigh_minus_y.z * size_x) + neigh_minus_y.x;
-                    add_minus_y = (voxModel->voxel_data[minus_y_index] == 0);
+                glm::vec3 neigh_y0(x, y - 1.0, z);
+                bool add_y0 = (neigh_y0.y < 0.0);
+                if (!add_y0) {
+                    uint32_t y0_index = (neigh_y0.y * size_z * size_x) + (neigh_y0.z * size_x) + neigh_y0.x;
+                    add_y0 = (voxModel->voxel_data[y0_index] == 0);
                 }
 
-                if (add_minus_y) {
+                if (add_y0) {
                     glm::vec3 normal(0.0f, -1.0f, 0.0f);
 
                     buffer.push_back(Vertex{ glm::vec3(0.0f, 0.0f, 0.0f) + voxel_pos, normal, vertex_color });
@@ -150,14 +150,14 @@ void Chunk::generate_buffers()
                     vertex_count += 6;
                 }
 
-                glm::vec3 neigh_plus_y(x, y + 1.0, z);
-                bool add_plus_y = (neigh_plus_y.x >= size_y);
-                if (!add_plus_y) {
-                    uint32_t plus_y_index = (neigh_plus_y.y * size_z * size_x) + (neigh_plus_y.z * size_x) + neigh_plus_y.x;
-                    add_plus_y = (voxModel->voxel_data[plus_y_index] == 0);
+                glm::vec3 neigh_y1(x, y + 1.0, z);
+                bool add_y1 = (neigh_y1.x >= size_y);
+                if (!add_y1) {
+                    uint32_t y1_index = (neigh_y1.y * size_z * size_x) + (neigh_y1.z * size_x) + neigh_y1.x;
+                    add_y1 = (voxModel->voxel_data[y1_index] == 0);
                 }
 
-                if (add_plus_y) {
+                if (add_y1) {
                     glm::vec3 normal(0.0f, 1.0f, 0.0f);
 
                     buffer.push_back(Vertex{ glm::vec3(0.0f, 1.0f, 0.0f) + voxel_pos, normal, vertex_color });

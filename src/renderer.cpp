@@ -101,7 +101,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     // overdraw debug visuals
     //glEnable(GL_BLEND);
     //glDepthFunc(GL_ALWAYS);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 
     camera = Camera(cam_pos, glm::vec3(0.0f, 1.0f, 0.0f), yaw, pitch);
     lastX = window_size.x / 2.0f;
@@ -145,6 +145,7 @@ void Renderer::loop() {
         // shader 
         mainShader.use();
 
+        // camera properties
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)window_size.x / (float)window_size.y, NEAR, FAR);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model = glm::mat4(1.0f);
@@ -152,6 +153,7 @@ void Renderer::loop() {
         mainShader.setMat4("view", view);
         mainShader.setMat4("model", model);
 
+        // lighting properties
         mainShader.setVec3("light_direction", 0.45f, -0.7f, 0.2f);
         mainShader.setVec3("color", 1.0f, 1.0f, 1.0f);
 
