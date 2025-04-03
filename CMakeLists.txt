@@ -2,18 +2,13 @@
 cmake_minimum_required(VERSION 4.0)
 project(voxel-meshing)
 
-
 # Source files
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 set(INCL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
 set(SOURCES "${SRC_DIR}/main.cpp" "${SRC_DIR}/renderer.cpp"
-"${INCL_DIR}/learnopengl/camera.cpp" "${SRC_DIR}/chunk.cpp"
-"${INCL_DIR}/imgui/imgui.cpp" "${INCL_DIR}/imgui/imgui_demo.cpp" 
-"${INCL_DIR}/imgui/imgui_draw.cpp" "${INCL_DIR}/imgui/imgui_impl_glfw.cpp" 
-"${INCL_DIR}/imgui/imgui_impl_opengl3.cpp" "${INCL_DIR}/imgui/imgui_tables.cpp" 
-"${INCL_DIR}/imgui/imgui_widgets.cpp")
+"${SRC_DIR}/learnopengl/camera.cpp" "${SRC_DIR}/chunk.cpp")
 
 # Executable definition and properties
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -37,6 +32,11 @@ add_library("glad" "${GLAD_DIR}/src/glad.c")
 target_include_directories("glad" PRIVATE "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
+
+# imgui
+set(IMGUI_DIR "${LIB_DIR}/imgui")
+add_subdirectory("${IMGUI_DIR}")
+target_link_libraries(${PROJECT_NAME} "imgui")
 
 # include folder
 target_include_directories(${PROJECT_NAME} PRIVATE "${INCL_DIR}")

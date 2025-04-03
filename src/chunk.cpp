@@ -1,8 +1,8 @@
 #include "chunk.h"
 
 #define OGT_VOX_IMPLEMENTATION
-#include "ogt_vox.h"
-#include "vox.h"
+#include "ogt_vox/ogt_vox.h"
+#include "ogt_vox/vox.h"
 
 #include <iostream>
 
