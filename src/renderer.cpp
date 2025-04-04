@@ -6,8 +6,8 @@ static Renderer& renderer = Renderer::getInstance();
 const float NEAR = 0.1f;
 const float FAR = 1000.0f;
 
-glm::vec3 cam_pos(-30.0f, 35.0f, -30.0f);
-float yaw = 45.0f;
+glm::vec3 cam_pos(60.0f, 35.0f, 60.0f);
+float yaw = 225.0f;
 float pitch = -20.0f;
 
 // called every loop to check whether ESC is pressed. If that's the case the window closes
@@ -148,12 +148,6 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     chunk = Chunk();
     chunk.generate_buffers();
 
-    std::cout << "x_VBO: " << coord_x.vbo << " x_VAO: " << coord_x.vao << std::endl;
-    std::cout << "y_VBO: " << coord_y.vbo << " y_VAO: " << coord_y.vao << std::endl;
-    std::cout << "z_VBO: " << coord_z.vbo << " z_VAO: " << coord_z.vao << std::endl;
-
-    std::cout << "chunk_VBO: " << chunk.vbo << " chunk_VAO: " << chunk.vao << std::endl;
-
     // uncomment this call to draw in wireframe polygons.
     if (enable_wireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -192,7 +186,7 @@ void Renderer::loop() {
         mainShader.setMat4("model", model);
 
         // lighting properties
-        mainShader.setVec3("light_direction", 0.45f, -0.7f, 0.2f);
+        mainShader.setVec3("light_direction", -0.45f, -0.7f, -0.2f);
         mainShader.setVec3("color", 1.0f, 1.0f, 1.0f);
 
         // render object

@@ -28,8 +28,6 @@ Line::~Line()
 {
 	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vbo);
-
-    std::cout << "Happens" << std::endl;
 }
 
 void Line::render(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
