@@ -132,10 +132,6 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     deltaTime = 0.0f;
     lastFrame = 0.0f;
 
-   // build and compile our shader program
-   // ---------------------------------------
-    mainShader = Shader("../shaders/main.vert", "../shaders/main.frag");
-
     // Coordinate lines
     // ---------------------------------------
     coord_x = Line(glm::vec3(0.0, 0.0, 0.0), glm::vec3(128.0, 0.0, 0.0), glm::vec3(1.0, 0.0, 0.0));
@@ -144,7 +140,6 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-
     chunk = Chunk();
     chunk.generate_buffers();
 
@@ -174,23 +169,14 @@ void Renderer::loop() {
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model = glm::mat4(1.0f);
 
-        coord_x.render(model, view, projection);
-        coord_y.render(model, view, projection);
-        coord_z.render(model, view, projection);
+        glm::mat4 mvp = projection * view * model;
 
-        // shader 
-        mainShader.use();
-
-        mainShader.setMat4("projection", projection);
-        mainShader.setMat4("view", view);
-        mainShader.setMat4("model", model);
-
-        // lighting properties
-        mainShader.setVec3("light_direction", -0.45f, -0.7f, -0.2f);
-        mainShader.setVec3("color", 1.0f, 1.0f, 1.0f);
+        coord_x.render(mvp);
+        coord_y.render(mvp);
+        coord_z.render(mvp);
 
         // render object
-        chunk.render();
+        chunk.render(mvp);
 
         imgui_render();
 

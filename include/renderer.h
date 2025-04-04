@@ -9,7 +9,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "learnopengl/shader.h"
 #include "learnopengl/camera.h";
 #include "chunk.h";
 #include "line.h";
@@ -47,7 +46,6 @@ public:
 	GLFWwindow* window;
 	glm::vec2 window_size;
 	
-	Shader mainShader;
 	Camera camera;
 	Chunk chunk;
 

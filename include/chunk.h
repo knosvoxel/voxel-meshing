@@ -5,17 +5,17 @@
 
 #include <vector>
 
+#include "learnopengl/shader.h"
+
 // holds data of a voxel mesh and logic to render it
 class Chunk {
 public:
 	Chunk() {};
-	//Chunk(glm::vec3 scene_size);
 	~Chunk();
 
 	void generate_buffers();
-	void render();
+	void render(glm::mat4 mvp);
 
 	GLuint vbo, vao, vertex_count = 0;
-	// TODO: Shader in chunk file
-	//glm::vec3 size;
+	Shader shader;
 };

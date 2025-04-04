@@ -21,6 +21,8 @@ Chunk::~Chunk()
 
 void Chunk::generate_buffers()
 {
+    shader = Shader("../shaders/main.vert", "../shaders/main.frag");
+
     std::vector<Vertex> buffer;
 
     const ogt_vox_scene* voxScene = load_vox_scene_with_groups("../res/vox/orientation_test.vox");
@@ -223,11 +225,18 @@ void Chunk::generate_buffers()
     delete[] voxScene;
 }
 
-void Chunk::render()
+void Chunk::render(glm::mat4 mvp)
 {
+    shader.use();
+
+    shader.setMat4("mvp", mvp);
+
+    // lighting properties
+    shader.setVec3("light_direction", -0.45f, -0.7f, -0.2f);
+    shader.setVec3("color", 1.0f, 1.0f, 1.0f);
+
     // draws the triangle
     glBindVertexArray(vao); //not necessary here because we only have a single VAO but doing it anyway to keep things more organized
-
 
     glDrawArrays(GL_TRIANGLES, 0, vertex_count);
     glBindVertexArray(0); //no need to unbind it every time

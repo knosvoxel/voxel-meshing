@@ -34,7 +34,7 @@ public:
 		return *this;
 	}
 
-	void render(glm::mat4 model, glm::mat4 view, glm::mat4 projection);
+	void render(glm::mat4 MVP);
 
 	glm::vec3 color;
 	GLuint vbo, vao;

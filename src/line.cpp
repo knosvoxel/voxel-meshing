@@ -30,13 +30,11 @@ Line::~Line()
 	glDeleteBuffers(1, &vbo);
 }
 
-void Line::render(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
+void Line::render(glm::mat4 mvp)
 {
     shader.use();
 
-    shader.setMat4("projection", projection);
-    shader.setMat4("view", view);
-    shader.setMat4("model", model);
+    shader.setMat4("mvp", mvp);
 
     shader.setVec3("color", color);
 
