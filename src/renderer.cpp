@@ -171,13 +171,15 @@ void Renderer::loop() {
 
         glm::mat4 mvp = projection * view * model;
 
+        // render coordinate lines
         coord_x.render(mvp);
         coord_y.render(mvp);
         coord_z.render(mvp);
 
-        // render object
+        // render main object
         chunk.render(mvp);
 
+        // render imgui UI
         imgui_render();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

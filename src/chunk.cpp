@@ -33,7 +33,7 @@ void Chunk::generate_buffers()
         const ogt_vox_model* voxModel = voxScene->models[voxInstance->model_index];
         ogt_vox_transform instance_transform = voxInstance->transform;
 
-        glm::vec3 instance_offset(instance_transform.m30, instance_transform.m31, instance_transform.m32);
+        glm::vec3 instance_offset(instance_transform.m31, instance_transform.m32, instance_transform.m30);
 
         //std::cout   << voxInstance->name << " "
         //            << instance_offset.x << " "
@@ -59,23 +59,25 @@ void Chunk::generate_buffers()
                         continue;
                     }
 
-                    glm::vec3 voxel_pos(x, z, y);
+                    glm::vec3 voxel_pos(y, z, x);
 
-                    voxel_pos -= instance_offset - glm::vec3(size_z / 2.0, size_y / 2.0, size_x / 2.0);
+                    voxel_pos += instance_offset - glm::vec3(size_y / 2.0, size_z / 2.0, size_x / 2.0);
 
                     ogt_vox_rgba color = voxScene->palette.color[color_index];
                     glm::vec3 vertex_color(float(color.r), float(color.g), float(color.b));
                     vertex_color /= 255.0f;
 
-                    glm::vec3 neigh_z0(x, y, z - 1.0f);
-                    //bool add_z0 = (neigh_z0.z < 0.0);
-                    bool add_z0 = true;
-                    if (!add_z0) {
-                        uint32_t z0_index = (neigh_z0.y * size_z * size_x) + (neigh_z0.z * size_x) + neigh_z0.x;
-                        add_z0 = (voxModel->voxel_data[z0_index] == 0);
-                    }
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    //glm::vec3 neigh_x0(x, y - 1.0, z);
+                    //bool add_x0 = (neigh_x0.y < 0.0);
+                    //if (!add_x0) {
+                    //    uint32_t x0_index = (neigh_x0.z * size_y * size_x) + (neigh_x0.y * size_y) + neigh_x0.x;
+                    //    add_x0 = (voxModel->voxel_data[x0_index] == 0);
+                    //}
 
-                    if (add_z0) {
+                    bool add_x0 = true;
+
+                    if (add_x0) {
 
                         glm::vec3 normal(-1.0f, 0.0f, 0.0f);
 
@@ -89,15 +91,16 @@ void Chunk::generate_buffers()
                         vertex_count += 6;
                     }
 
-                    glm::vec3 neigh_z1(x, y, z + 1.0f);
-                    //bool add_z1 = (neigh_z1.z >= size_z)/
-                    bool add_z1 = true;
-                    if (!add_z1) {
-                        uint32_t z1_index = (neigh_z1.y * size_z * size_x) + (neigh_z1.z * size_x) + neigh_z1.x;
-                        add_z1 = (voxModel->voxel_data[z1_index] == 0);
-                    }
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    //glm::vec3 neigh_x1(x, y + 1.0, z);
+                    //bool add_x1 = (neigh_x1.y >= size_y);
+                    //if (!add_x1) {
+                    //    uint32_t x1_index = (neigh_x1.z * size_y * size_x) + (neigh_x1.y * size_y) + neigh_x1.x;
+                    //    add_x1 = (voxModel->voxel_data[x1_index] == 0);
+                    //}
+                    bool add_x1 = true;
 
-                    if (add_z1) {
+                    if (add_x1) {
 
                         glm::vec3 normal(1.0f, 0.0f, 0.0f);
 
@@ -111,15 +114,17 @@ void Chunk::generate_buffers()
                         vertex_count += 6;
                     }
 
-                    glm::vec3 neigh_x0(x - 1.0f, y, z);
-                    //bool add_x0 = (neigh_x0.x < 0.0);
-                    bool add_x0 = true;
-                    if (!add_x0) {
-                        uint32_t x0_index = (neigh_x0.y * size_z * size_x) + (neigh_x0.z * size_x) + neigh_x0.x;
-                        add_x0 = (voxModel->voxel_data[x0_index] == 0);
-                    }
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    //glm::vec3 neigh_z0(x - 1.0, y, z);
+                    //bool add_z0 = (neigh_z0.x < 0.0);
+                    //if (!add_z0) {
+                    //    uint32_t z0_index = (neigh_z0.z * size_y * size_x) + (neigh_z0.y * size_y) + neigh_z0.x;
+                    //    add_z0 = (voxModel->voxel_data[z0_index] == 0);
+                    //}
 
-                    if (add_x0) {
+                    bool add_z0 = true;
+
+                    if (add_z0) {
                         glm::vec3 normal(0.0f, 0.0f, -1.0f);
 
                         buffer.push_back(Vertex{ glm::vec3(0.0f, 0.0f, 0.0f) + voxel_pos, normal, vertex_color });
@@ -132,15 +137,17 @@ void Chunk::generate_buffers()
                         vertex_count += 6;
                     }
 
-                    glm::vec3 neigh_x1(x + 1.0f, y, z);
-                    //bool add_x1 = (neigh_x1.x >= size_x);
-                    bool add_x1 = true;
-                    if (!add_x1) {
-                        uint32_t x1_index = (neigh_x1.y * size_z * size_x) + (neigh_x1.z * size_x) + neigh_x1.x;
-                        add_x1 = (voxModel->voxel_data[x1_index] == 0);
-                    }
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    //glm::vec3 neigh_z1(x + 1.0, y, z);
+                    //bool add_z1 = (neigh_z1.x >= size_x);
+                    //if (!add_z1) {
+                    //    uint32_t z1_index = (neigh_z1.z * size_y * size_x) + (neigh_z1.y * size_y) + neigh_z1.x;
+                    //    add_z1 = (voxModel->voxel_data[z1_index] == 0);
+                    //}
 
-                    if (add_x1) {
+                    bool add_z1 = true;
+
+                    if (add_z1) {
                         glm::vec3 normal(0.0f, 0.0f, 1.0f);
 
                         buffer.push_back(Vertex{ glm::vec3(0.0f, 0.0f, 1.0f) + voxel_pos, normal, vertex_color });
@@ -153,13 +160,15 @@ void Chunk::generate_buffers()
                         vertex_count += 6;
                     }
 
-                    glm::vec3 neigh_y0(x, y - 1.0f, z);
-                    //bool add_y0 = (neigh_y0.y < 0.0);
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    //glm::vec3 neigh_y0(x, y, z - 1.0);
+                    //bool add_y0 = (neigh_y0.z < 0.0);
+                    //if (!add_y0) {
+                    //    uint32_t y0_index = (neigh_y0.z * size_y * size_x) + (neigh_y0.y * size_y) + neigh_y0.x;
+                    //    add_y0 = (voxModel->voxel_data[y0_index] == 0);
+                    //}
+
                     bool add_y0 = true;
-                    if (!add_y0) {
-                        uint32_t y0_index = (neigh_y0.y * size_z * size_x) + (neigh_y0.z * size_x) + neigh_y0.x;
-                        add_y0 = (voxModel->voxel_data[y0_index] == 0);
-                    }
 
                     if (add_y0) {
                         glm::vec3 normal(0.0f, -1.0f, 0.0f);
@@ -174,13 +183,15 @@ void Chunk::generate_buffers()
                         vertex_count += 6;
                     }
 
-                    glm::vec3 neigh_y1(x, y + 1.0f, z);
-                    //bool add_y1 = (neigh_y1.y >= size_y);
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    //glm::vec3 neigh_y1(x, y, z + 1.0);
+                    //bool add_y1 = (neigh_y1.z >= size_z);
+                    //if (!add_y1) {
+                    //    uint32_t y1_index = (neigh_y1.z * size_y * size_x) + (neigh_y1.y * size_y) + neigh_y1.x;
+                    //    add_y1 = (voxModel->voxel_data[y1_index] == 0);
+                    //}
+
                     bool add_y1 = true;
-                    if (!add_y1) {
-                        uint32_t y1_index = (neigh_y1.y * size_z * size_x) + (neigh_y1.z * size_x) + neigh_y1.x;
-                        add_y1 = (voxModel->voxel_data[y1_index] == 0);
-                    }
 
                     if (add_y1) {
                         glm::vec3 normal(0.0f, 1.0f, 0.0f);
