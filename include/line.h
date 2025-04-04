@@ -15,6 +15,25 @@ public:
 
 	~Line();
 
+	Line& operator=(Line&& other) noexcept {
+		if (this != &other) {
+			// Clean up existing resources
+			if (vbo) glDeleteBuffers(1, &vbo);
+			if (vao) glDeleteVertexArrays(1, &vao);
+
+			// Move data
+			color = std::move(other.color);
+			vbo = other.vbo;
+			vao = other.vao;
+			shader = std::move(other.shader);
+
+			// Leave the other object in a valid state
+			other.vbo = 0;
+			other.vao = 0;
+		}
+		return *this;
+	}
+
 	void render(glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 
 	glm::vec3 color;

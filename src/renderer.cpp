@@ -138,9 +138,9 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
 
     // Coordinate lines
     // ---------------------------------------
-    coord_x = Line(glm::vec3(0.0, 0.0, 0.0), glm::vec3(1024.0, 0.0, 0.0), glm::vec3(1.0, 0.0, 0.0));
-    coord_y = Line(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1024.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-    coord_z = Line(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 1024.0), glm::vec3(0.0, 0.0, 1.0));
+    coord_x = Line(glm::vec3(0.0, 0.0, 0.0), glm::vec3(128.0, 0.0, 0.0), glm::vec3(1.0, 0.0, 0.0));
+    coord_y = Line(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 128.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+    coord_z = Line(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 128.0), glm::vec3(0.0, 0.0, 1.0));
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
@@ -175,13 +175,18 @@ void Renderer::loop() {
         glClearColor(0.149f, 0.149f, 0.149f, 1.0f); // color to use glClear with
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clears the color buffer "replacing" all pixels with the selected color
 
-        // shader 
-        mainShader.use();
-
         // camera properties
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)window_size.x / (float)window_size.y, NEAR, FAR);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model = glm::mat4(1.0f);
+
+        coord_x.render(model, view, projection);
+        coord_y.render(model, view, projection);
+        coord_z.render(model, view, projection);
+
+        // shader 
+        mainShader.use();
+
         mainShader.setMat4("projection", projection);
         mainShader.setMat4("view", view);
         mainShader.setMat4("model", model);
@@ -190,12 +195,8 @@ void Renderer::loop() {
         mainShader.setVec3("light_direction", 0.45f, -0.7f, 0.2f);
         mainShader.setVec3("color", 1.0f, 1.0f, 1.0f);
 
-        coord_x.render(model, view, projection);
-        coord_y.render(model, view, projection);
-        coord_z.render(model, view, projection);
-
         // render object
-        //chunk.render();
+        chunk.render();
 
         imgui_render();
 
