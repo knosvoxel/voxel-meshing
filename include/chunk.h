@@ -16,5 +16,6 @@ public:
 	void render();
 
 	GLuint vbo, vao, vertex_count = 0;
+	// TODO: Shader in chunk file
 	//glm::vec3 size;
 };

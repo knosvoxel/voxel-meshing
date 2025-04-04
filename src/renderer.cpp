@@ -111,7 +111,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     // overdraw debug visuals
     //glEnable(GL_BLEND);
     //glDepthFunc(GL_ALWAYS);
-    //glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Setup Dear ImGui context
     // -------------------------------------------
@@ -136,11 +136,23 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
    // ---------------------------------------
     mainShader = Shader("../shaders/main.vert", "../shaders/main.frag");
 
+    // Coordinate lines
+    // ---------------------------------------
+    coord_x = Line(glm::vec3(0.0, 0.0, 0.0), glm::vec3(1024.0, 0.0, 0.0), glm::vec3(1.0, 0.0, 0.0));
+    coord_y = Line(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1024.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+    coord_z = Line(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 1024.0), glm::vec3(0.0, 0.0, 1.0));
+    
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
 
     chunk = Chunk();
     chunk.generate_buffers();
+
+    std::cout << "x_VBO: " << coord_x.vbo << " x_VAO: " << coord_x.vao << std::endl;
+    std::cout << "y_VBO: " << coord_y.vbo << " y_VAO: " << coord_y.vao << std::endl;
+    std::cout << "z_VBO: " << coord_z.vbo << " z_VAO: " << coord_z.vao << std::endl;
+
+    std::cout << "chunk_VBO: " << chunk.vbo << " chunk_VAO: " << chunk.vao << std::endl;
 
     // uncomment this call to draw in wireframe polygons.
     if (enable_wireframe) {
@@ -178,8 +190,12 @@ void Renderer::loop() {
         mainShader.setVec3("light_direction", 0.45f, -0.7f, 0.2f);
         mainShader.setVec3("color", 1.0f, 1.0f, 1.0f);
 
+        coord_x.render(model, view, projection);
+        coord_y.render(model, view, projection);
+        coord_z.render(model, view, projection);
+
         // render object
-        chunk.render();
+        //chunk.render();
 
         imgui_render();
 

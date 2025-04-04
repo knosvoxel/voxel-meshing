@@ -12,6 +12,7 @@
 #include "learnopengl/shader.h"
 #include "learnopengl/camera.h";
 #include "chunk.h";
+#include "line.h";
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -52,6 +53,8 @@ public:
 	Shader mainShader;
 	Camera camera;
 	Chunk chunk;
+
+	Line coord_x, coord_y, coord_z;
 
 	float lastX, lastY, deltaTime, lastFrame;
 	bool firstMouse = true;

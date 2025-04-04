@@ -23,7 +23,7 @@ void Chunk::generate_buffers()
 {
     std::vector<Vertex> buffer;
 
-    const ogt_vox_scene* voxScene = load_vox_scene_with_groups("../res/vox/test3.vox");
+    const ogt_vox_scene* voxScene = load_vox_scene_with_groups("../res/vox/orientation_test.vox");
 
     for (uint32_t inst_index = 0; inst_index < voxScene->num_instances; inst_index++) {
 
@@ -33,15 +33,20 @@ void Chunk::generate_buffers()
 
         glm::vec3 instance_offset(instance_transform.m30, instance_transform.m31, instance_transform.m32);
 
+        //std::cout   << voxInstance->name << " "
+        //            << instance_offset.x << " "
+        //            << instance_offset.y << " "
+        //            << instance_offset.z << std::endl;
+
         uint32_t voxel_index = 0;
 
         uint32_t size_x = voxModel->size_x;
         uint32_t size_y = voxModel->size_y;
         uint32_t size_z = voxModel->size_z;
 
-        for (uint32_t y = 0; y < size_y; y++)
+        for (uint32_t z = 0; z < size_z; z++)
         {
-            for (uint32_t z = 0; z < size_z; z++)
+            for (uint32_t y = 0; y < size_y; y++)
             {
                 for (uint32_t x = 0; x < size_x; x++, voxel_index++)
                 {
@@ -52,15 +57,17 @@ void Chunk::generate_buffers()
                         continue;
                     }
 
-                    glm::vec3 voxel_pos(z, y, x);
-                    voxel_pos -= instance_offset;
+                    glm::vec3 voxel_pos(x, z, y);
+
+                    voxel_pos -= instance_offset - glm::vec3(size_z / 2.0, size_y / 2.0, size_x / 2.0);
 
                     ogt_vox_rgba color = voxScene->palette.color[color_index];
                     glm::vec3 vertex_color(float(color.r), float(color.g), float(color.b));
                     vertex_color /= 255.0f;
 
                     glm::vec3 neigh_z0(x, y, z - 1.0f);
-                    bool add_z0 = (neigh_z0.z < 0.0);
+                    //bool add_z0 = (neigh_z0.z < 0.0);
+                    bool add_z0 = true;
                     if (!add_z0) {
                         uint32_t z0_index = (neigh_z0.y * size_z * size_x) + (neigh_z0.z * size_x) + neigh_z0.x;
                         add_z0 = (voxModel->voxel_data[z0_index] == 0);
@@ -81,7 +88,8 @@ void Chunk::generate_buffers()
                     }
 
                     glm::vec3 neigh_z1(x, y, z + 1.0f);
-                    bool add_z1 = (neigh_z1.z >= size_z);
+                    //bool add_z1 = (neigh_z1.z >= size_z)/
+                    bool add_z1 = true;
                     if (!add_z1) {
                         uint32_t z1_index = (neigh_z1.y * size_z * size_x) + (neigh_z1.z * size_x) + neigh_z1.x;
                         add_z1 = (voxModel->voxel_data[z1_index] == 0);
@@ -102,7 +110,8 @@ void Chunk::generate_buffers()
                     }
 
                     glm::vec3 neigh_x0(x - 1.0f, y, z);
-                    bool add_x0 = (neigh_x0.x < 0.0);
+                    //bool add_x0 = (neigh_x0.x < 0.0);
+                    bool add_x0 = true;
                     if (!add_x0) {
                         uint32_t x0_index = (neigh_x0.y * size_z * size_x) + (neigh_x0.z * size_x) + neigh_x0.x;
                         add_x0 = (voxModel->voxel_data[x0_index] == 0);
@@ -122,7 +131,8 @@ void Chunk::generate_buffers()
                     }
 
                     glm::vec3 neigh_x1(x + 1.0f, y, z);
-                    bool add_x1 = (neigh_x1.x >= size_x);
+                    //bool add_x1 = (neigh_x1.x >= size_x);
+                    bool add_x1 = true;
                     if (!add_x1) {
                         uint32_t x1_index = (neigh_x1.y * size_z * size_x) + (neigh_x1.z * size_x) + neigh_x1.x;
                         add_x1 = (voxModel->voxel_data[x1_index] == 0);
@@ -142,7 +152,8 @@ void Chunk::generate_buffers()
                     }
 
                     glm::vec3 neigh_y0(x, y - 1.0f, z);
-                    bool add_y0 = (neigh_y0.y < 0.0);
+                    //bool add_y0 = (neigh_y0.y < 0.0);
+                    bool add_y0 = true;
                     if (!add_y0) {
                         uint32_t y0_index = (neigh_y0.y * size_z * size_x) + (neigh_y0.z * size_x) + neigh_y0.x;
                         add_y0 = (voxModel->voxel_data[y0_index] == 0);
@@ -162,7 +173,8 @@ void Chunk::generate_buffers()
                     }
 
                     glm::vec3 neigh_y1(x, y + 1.0f, z);
-                    bool add_y1 = (neigh_y1.y >= size_y);
+                    //bool add_y1 = (neigh_y1.y >= size_y);
+                    bool add_y1 = true;
                     if (!add_y1) {
                         uint32_t y1_index = (neigh_y1.y * size_z * size_x) + (neigh_y1.z * size_x) + neigh_y1.x;
                         add_y1 = (voxModel->voxel_data[y1_index] == 0);
@@ -184,6 +196,7 @@ void Chunk::generate_buffers()
             }
         }
     }
+
     glCreateVertexArrays(1, &vao);
     glCreateBuffers(1, &vbo);
 
@@ -217,5 +230,5 @@ void Chunk::render()
 
 
     glDrawArrays(GL_TRIANGLES, 0, vertex_count);
-    //glBindVertexArray(0); //no need to unbind it every time
+    glBindVertexArray(0); //no need to unbind it every time
 }
