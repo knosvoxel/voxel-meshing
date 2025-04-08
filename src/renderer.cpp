@@ -1,5 +1,7 @@
 #include "renderer.h"
 
+#include "learnopengl/compute.h"
+
 static Renderer& renderer = Renderer::getInstance();
 
 // Camera settings
@@ -140,8 +142,9 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-    chunk = Chunk();
     chunk.generate_buffers();
+
+    quad = ScreenQuad(0.0);
 
     // uncomment this call to draw in wireframe polygons.
     if (enable_wireframe) {
@@ -176,8 +179,10 @@ void Renderer::loop() {
         coord_y.render(mvp);
         coord_z.render(mvp);
 
-        // render main object
+        //// render main object
         chunk.render(mvp);
+
+        quad.render(mvp);
 
         // render imgui UI
         imgui_render();

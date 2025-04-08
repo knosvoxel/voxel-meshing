@@ -12,6 +12,7 @@
 #include "learnopengl/camera.h";
 #include "chunk.h";
 #include "line.h";
+#include "screen_quad.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -50,6 +51,7 @@ public:
 	Chunk chunk;
 
 	Line coord_x, coord_y, coord_z;
+	ScreenQuad quad;
 
 	float lastX, lastY, deltaTime, lastFrame;
 	bool firstMouse = true;
