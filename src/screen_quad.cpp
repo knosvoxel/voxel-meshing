@@ -36,49 +36,16 @@ ScreenQuad::ScreenQuad(float test)
 
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, 5 * sizeof(float)); // copies vertex data into the buffer's memory
 
-    //glCreateTextures(GL_TEXTURE_2D, 1, &texture);
 
-    //glTexParameteri(texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //glTexParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glCreateTextures(GL_TEXTURE_2D, 1, &texture);
 
-    //glTextureStorage2D(texture, 1, GL_RGBA32F, TEXTURE_WIDTH, TEXTURE_HEIGHT);
-    //glBindTextureUnit(GL_TEXTURE0, texture);
+    glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glGenTextures(1, &texture);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGBA,
-        GL_FLOAT, NULL);
-
+    glTextureStorage2D(texture, 1, GL_RGBA32F, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
-
-    /*glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    int width, height, nrChannels; 
-
-    unsigned char* data = stbi_load("../res/container.jpg", &width, &height, &nrChannels, 0);
-
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    
-    stbi_image_free(data);*/
 }
 
 ScreenQuad::~ScreenQuad()
@@ -96,7 +63,7 @@ void ScreenQuad::render(glm::mat4 mvp)
     // make sure writing to image has finished before read
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTextureUnit(0, texture);
 
     shader.use();
     shader.setMat4("mvp", mvp);
