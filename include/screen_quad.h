@@ -12,7 +12,6 @@
 class ScreenQuad {
 public:
 	ScreenQuad() {};
-	ScreenQuad(float test);
 
 	~ScreenQuad();
 
@@ -38,6 +37,7 @@ public:
 		return *this;
 	}
 
+	void generate_buffers();
 	void render(glm::mat4 mvp, float current_frame);
 
 	glm::vec3 color;

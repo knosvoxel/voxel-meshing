@@ -3,7 +3,13 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image/stb_image.h>
 
-ScreenQuad::ScreenQuad(float test)
+ScreenQuad::~ScreenQuad()
+{
+	glDeleteVertexArrays(1, &vao);
+	glDeleteBuffers(1, &vbo);
+}
+
+void ScreenQuad::generate_buffers() 
 {
     shader = Shader("../shaders/screenQuad.vert", "../shaders/screenQuad.frag");
 
@@ -46,12 +52,6 @@ ScreenQuad::ScreenQuad(float test)
 
     glTextureStorage2D(texture, 1, GL_RGBA32F, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
-}
-
-ScreenQuad::~ScreenQuad()
-{
-	glDeleteVertexArrays(1, &vao);
-	glDeleteBuffers(1, &vbo);
 }
 
 void ScreenQuad::render(glm::mat4 mvp, float current_frame)
