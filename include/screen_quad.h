@@ -28,7 +28,7 @@ public:
 			vao = other.vao;
 			texture = other.texture;
 			shader = std::move(other.shader);
-			computeShader = std::move(other.computeShader);
+			compute = std::move(other.compute);
 
 			// Leave the other object in a valid state
 			other.vbo = 0;
@@ -38,12 +38,12 @@ public:
 		return *this;
 	}
 
-	void render(glm::mat4 mvp);
+	void render(glm::mat4 mvp, float current_frame);
 
 	glm::vec3 color;
 	GLuint vbo, vao, texture;
 	Shader shader;
 
-	const unsigned int TEXTURE_WIDTH = 512, TEXTURE_HEIGHT = 512;
-	ComputeShader computeShader;
+	const unsigned int TEXTURE_WIDTH = 1000, TEXTURE_HEIGHT = 1000;
+	ComputeShader compute;
 };

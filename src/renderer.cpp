@@ -182,7 +182,7 @@ void Renderer::loop() {
         //// render main object
         chunk.render(mvp);
 
-        quad.render(mvp);
+        quad.render(mvp, currentFrame);
 
         // render imgui UI
         imgui_render();

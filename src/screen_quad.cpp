@@ -7,7 +7,7 @@ ScreenQuad::ScreenQuad(float test)
 {
     shader = Shader("../shaders/screenQuad.vert", "../shaders/screenQuad.frag");
 
-    computeShader = ComputeShader("../shaders/compute.comp");
+    compute = ComputeShader("../shaders/compute.comp");
 
     float vertices[]{
         -50.0, -50.0, 0.0, 0.0, 0.0, // vec3 pos vec2 uv
@@ -36,7 +36,7 @@ ScreenQuad::ScreenQuad(float test)
 
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, 5 * sizeof(float)); // copies vertex data into the buffer's memory
 
-
+    // texture generation with DSA
     glCreateTextures(GL_TEXTURE_2D, 1, &texture);
 
     glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -54,15 +54,18 @@ ScreenQuad::~ScreenQuad()
 	glDeleteBuffers(1, &vbo);
 }
 
-void ScreenQuad::render(glm::mat4 mvp)
+void ScreenQuad::render(glm::mat4 mvp, float current_frame)
 {
-    computeShader.use();
+    // compute shader call
+    compute.use();
+    compute.setFloat("t", current_frame);
     
-    glDispatchCompute((unsigned int)TEXTURE_WIDTH, (unsigned int)TEXTURE_HEIGHT, 1);
+    glDispatchCompute((unsigned int)TEXTURE_WIDTH / 10, (unsigned int)TEXTURE_HEIGHT / 10, 1);
 
     // make sure writing to image has finished before read
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
+    // fragment/ vertex shader calls
     glBindTextureUnit(0, texture);
 
     shader.use();
