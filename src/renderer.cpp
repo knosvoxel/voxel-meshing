@@ -12,12 +12,13 @@ glm::vec3 cam_pos(60.0f, 35.0f, 60.0f);
 float yaw = 225.0f;
 float pitch = -20.0f;
 
+bool mouse_caught = true;
+
 // called every loop to check whether ESC is pressed. If that's the case the window closes
 void Renderer::processInput()
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
+    if (!mouse_caught) return;
+    
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -36,6 +37,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void mouse_callback(GLFWwindow* handle, double xposIn, double yposIn)
 {
+    if (!mouse_caught) return;
+
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
 
@@ -55,13 +58,35 @@ void mouse_callback(GLFWwindow* handle, double xposIn, double yposIn)
     renderer.camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void imgui_render() {
+void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        if (mouse_caught) 
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            mouse_caught = false;
+        }
+        else 
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            mouse_caught = true;
+            renderer.firstMouse = true;
+        }
+    }
+}
+
+void Renderer::imgui_render() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     ImGui::Begin("Performance");
     ImGui::Text("Frametime: %.3f ms (FPS %.1f)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::End();
+    ImGui::Begin("Camera");
+    ImGui::DragFloat3("Position", (float*)&camera.Position, 0.01f);
+    ImGui::DragFloat("Movement Speed", (float*)&camera.MovementSpeed, 0.01f);
     ImGui::End();
 
     ImGui::Render();
@@ -88,6 +113,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetKeyCallback(window, keyboard_callback);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 

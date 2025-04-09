@@ -44,6 +44,8 @@ public:
 	void loop();
 	void processInput();
 
+	void imgui_render();
+
 	GLFWwindow* window;
 	glm::vec2 window_size;
 	
