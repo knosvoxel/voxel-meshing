@@ -35,7 +35,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void mouse_callback(GLFWwindow* handle, double xposIn, double yposIn)
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
     if (!mouse_caught) return;
 
@@ -56,6 +56,16 @@ void mouse_callback(GLFWwindow* handle, double xposIn, double yposIn)
     renderer.lastY = ypos;
 
     renderer.camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && !mouse_caught)
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        mouse_caught = true;
+        renderer.firstMouse = true;
+    }
 }
 
 void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -113,6 +123,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetKeyCallback(window, keyboard_callback);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
