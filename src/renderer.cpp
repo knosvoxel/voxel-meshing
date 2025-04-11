@@ -29,12 +29,16 @@ void Renderer::processInput()
         camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
+// callback functions
+// -------------------------------------------
 // checks whether the window has changed size to adjust the viewport too
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+    renderer.window_size = glm::vec2(width, height);
 }
 
+// mouse movement
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
     if (!mouse_caught) return;
@@ -58,6 +62,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     renderer.camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
+// mouse button input
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
     if (button == GLFW_MOUSE_BUTTON_RIGHT && !mouse_caught)
@@ -68,6 +73,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 
+// keyboard input
 void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -86,6 +92,8 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
     }
 }
 
+// Renderer functions
+// -------------------------------------------
 void Renderer::imgui_render() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -215,10 +223,24 @@ void Renderer::loop() {
         coord_y.render(mvp);
         coord_z.render(mvp);
 
-        //// render main object
+        // render main object
         chunk.render(mvp);
 
-        quad.render(mvp, currentFrame);
+        // render screen quad
+        float aspect_ratio = window_size.y / window_size.x;
+
+        glm::vec2 quad_size = glm::vec2(0.25f);
+        glm::vec2 quad_scale = glm::vec2(quad_size.x, quad_size.y / aspect_ratio);
+
+        glm::vec2 half_size = quad_scale * 0.5f;
+        glm::vec2 quad_pos = glm::vec2(1.0f - half_size.x, 1.0f - half_size.y);
+
+        glm::mat4 quad_mat = glm::mat4(1.0f);
+        quad_mat = glm::translate(quad_mat, glm::vec3(quad_pos, 0.0f));
+        quad_mat = glm::scale(quad_mat, glm::vec3(quad_scale, 1.0f));
+
+
+        quad.render(quad_mat, currentFrame);
 
         // render imgui UI
         imgui_render();

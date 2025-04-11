@@ -16,13 +16,12 @@ void ScreenQuad::generate_buffers()
     compute = ComputeShader("../shaders/compute.comp");
 
     float vertices[]{
-        -50.0, -50.0, 0.0, 0.0, 0.0, // vec3 pos vec2 uv
-        -50.0, 50.0, 0.0, 0.0, 1.0,
-        50.0, -50.0, 0.0, 1.0, 0.0,
-        50.0, 50.0, 0.0, 1.0, 1.0,
-        50.0, -50.0, 0.0, 1.0, 0.0,
-        -50.0, 50.0, 0.0, 0.0, 1.0
-
+        -0.5, -0.5, 0.0, 0.0, 0.0, // vec3 pos vec2 uv
+        -0.5, 0.5, 0.0, 0.0, 1.0,
+        0.5, -0.5, 0.0, 1.0, 0.0,
+        0.5, 0.5, 0.0, 1.0, 1.0,
+        0.5, -0.5, 0.0, 1.0, 0.0,
+        -0.5, 0.5, 0.0, 0.0, 1.0
     };
 
     glCreateVertexArrays(1, &vao);
@@ -69,8 +68,8 @@ void ScreenQuad::render(glm::mat4 mvp, float current_frame)
     glBindTextureUnit(0, texture);
 
     shader.use();
-    shader.setMat4("mvp", mvp);
     shader.setInt("tex", 0);
+    shader.setMat4("mvp", mvp);
 
     // draws the triangle
     glBindVertexArray(vao);
