@@ -56,13 +56,15 @@ void ComputeChunk::generate_buffers()
 
                     voxel_pos += instance_offset - glm::vec3(size_y / 2.0, size_z / 2.0, size_x / 2.0);
 
-                    if (voxel_pos.y > 0.0) continue;
+                    if (voxel_pos.y != 0.0) continue;
 
                     ogt_vox_rgba color = voxScene->palette.color[color_index];
                     glm::vec3 vertex_color(float(color.r), float(color.g), float(color.b));
                     vertex_color /= 255.0f;
 
-                    int index = (x + y * TEXTURE_WIDTH) * 3;
+                    int tx = int(voxel_pos.x + (TEXTURE_WIDTH / 2));
+                    int tz = int(voxel_pos.z + (TEXTURE_HEIGHT / 2));
+                    int index = (tx + tz * TEXTURE_WIDTH) * 3;
                     texture_data[index + 0] = vertex_color.r;
                     texture_data[index + 1] = vertex_color.g;
                     texture_data[index + 2] = vertex_color.b;

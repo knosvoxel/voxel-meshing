@@ -48,6 +48,6 @@ public:
 	GLuint vbo, vao, texture;
 	Shader shader;
 
-	const unsigned int TEXTURE_WIDTH = 2048, TEXTURE_HEIGHT = 2048;
+	const unsigned int TEXTURE_WIDTH = 2000, TEXTURE_HEIGHT = 2000;
 	ComputeShader compute;
 };
