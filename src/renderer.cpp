@@ -1,7 +1,5 @@
 #include "renderer.h"
 
-#include "learnopengl/compute.h"
-
 static Renderer& renderer = Renderer::getInstance();
 
 // Camera settings

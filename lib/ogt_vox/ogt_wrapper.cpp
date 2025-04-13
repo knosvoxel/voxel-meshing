@@ -1,63 +1,58 @@
-#pragma once
+#include "ogt_wrapper.h"
 
-#if defined(_MSC_VER)
-#include <io.h>
-#endif
-#include <stdio.h>
-
-const ogt_vox_scene* load_vox_scene(const char* filename, uint32_t scene_read_flags = 0)
+const ogt_vox_scene* load_vox_scene(const char* filename, uint32_t scene_read_flags)
 {
-    // open the file
+	// open the file
 #if defined(_MSC_VER) && _MSC_VER >= 1400
-    FILE* fp;
-    if (0 != fopen_s(&fp, filename, "rb"))
-        fp = 0;
+	FILE* fp;
+	if (0 != fopen_s(&fp, filename, "rb"))
+		fp = 0;
 #else
-    FILE* fp = fopen(filename, "rb");
+	FILE* fp = fopen(filename, "rb");
 #endif
-    if (!fp)
-        return NULL;
+	if (!fp)
+		return NULL;
 
-    // get the buffer size which matches the size of the file
-    fseek(fp, 0, SEEK_END);
-    uint32_t buffer_size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+	// get the buffer size which matches the size of the file
+	fseek(fp, 0, SEEK_END);
+	uint32_t buffer_size = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
 
-    // load the file into a memory buffer
-    uint8_t* buffer = new uint8_t[buffer_size];
-    fread(buffer, buffer_size, 1, fp);
-    fclose(fp);
+	// load the file into a memory buffer
+	uint8_t* buffer = new uint8_t[buffer_size];
+	fread(buffer, buffer_size, 1, fp);
+	fclose(fp);
 
-    // construct the scene from the buffer
-    const ogt_vox_scene* scene = ogt_vox_read_scene_with_flags(buffer, buffer_size, scene_read_flags);
+	// construct the scene from the buffer
+	const ogt_vox_scene* scene = ogt_vox_read_scene_with_flags(buffer, buffer_size, scene_read_flags);
 
-    // the buffer can be safely deleted once the scene is instantiated.
-    delete[] buffer;
+	// the buffer can be safely deleted once the scene is instantiated.
+	delete[] buffer;
 
-    return scene;
+	return scene;
 }
 
 const ogt_vox_scene* load_vox_scene_with_groups(const char* filename)
 {
-    return load_vox_scene(filename, k_read_scene_flags_groups);
+	return load_vox_scene(filename, k_read_scene_flags_groups);
 }
 
 uint32_t count_solid_voxels_in_model(const ogt_vox_model* model)
 {
-    uint32_t solid_voxel_count = 0;
-    uint32_t voxel_index = 0;
-    for (uint32_t z = 0; z < model->size_z; z++) {
-        for (uint32_t y = 0; y < model->size_y; y++) {
-            for (uint32_t x = 0; x < model->size_x; x++, voxel_index++) {
-                // if color index == 0, this voxel is empty, otherwise it is solid.
-                uint32_t color_index = model->voxel_data[voxel_index];
-                bool is_voxel_solid = (color_index != 0);
-                // add to our accumulator
-                solid_voxel_count += (is_voxel_solid ? 1 : 0);
-            }
-        }
-    }
-    return solid_voxel_count;
+	uint32_t solid_voxel_count = 0;
+	uint32_t voxel_index = 0;
+	for (uint32_t z = 0; z < model->size_z; z++) {
+		for (uint32_t y = 0; y < model->size_y; y++) {
+			for (uint32_t x = 0; x < model->size_x; x++, voxel_index++) {
+				// if color index == 0, this voxel is empty, otherwise it is solid.
+				uint32_t color_index = model->voxel_data[voxel_index];
+				bool is_voxel_solid = (color_index != 0);
+				// add to our accumulator
+				solid_voxel_count += (is_voxel_solid ? 1 : 0);
+			}
+		}
+	}
+	return solid_voxel_count;
 }
 
 void ogt_demo() {

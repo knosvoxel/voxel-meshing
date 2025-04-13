@@ -7,6 +7,8 @@
 
 #include "learnopengl/shader.h"
 
+#include "ogt_wrapper.h"
+
 // holds data of a voxel mesh and logic to render it
 class Chunk {
 public:

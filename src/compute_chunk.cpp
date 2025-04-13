@@ -1,8 +1,5 @@
 #include "compute_chunk.h"
 
-//#include "ogt_vox/ogt_vox.h"
-//#include "ogt_vox/vox.h"
-
 ComputeChunk::~ComputeChunk()
 {
     glDeleteVertexArrays(1, &vao);
@@ -24,16 +21,53 @@ void ComputeChunk::generate_buffers()
         -50.0, 50.0, 0.0, 0.0, 1.0
     };
 
+    const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/32x32x32.vox");
+
     std::vector<float> texture_data(TEXTURE_WIDTH * TEXTURE_HEIGHT * 3);
 
-    for (int y = 0; y < TEXTURE_HEIGHT; y++)
-    {
-        for (int x = 0; x < TEXTURE_WIDTH; x++)
+    for (uint32_t inst_index = 0; inst_index < voxScene->num_instances; inst_index++) {
+
+        const ogt_vox_instance* voxInstance = &voxScene->instances[inst_index];
+        const ogt_vox_model* voxModel = voxScene->models[voxInstance->model_index];
+        ogt_vox_transform instance_transform = voxInstance->transform;
+
+        glm::vec3 instance_offset(instance_transform.m31, instance_transform.m32, instance_transform.m30);
+
+        uint32_t voxel_index = 0;
+
+        uint32_t size_x = voxModel->size_x;
+        uint32_t size_y = voxModel->size_y;
+        uint32_t size_z = voxModel->size_z;
+
+        for (uint32_t z = 0; z < size_z; z++)
         {
-            int index = (x + y * TEXTURE_WIDTH) * 3;
-            texture_data[index + 0] = float(x) / TEXTURE_WIDTH;
-            texture_data[index + 1] = float(y) / TEXTURE_HEIGHT;
-            texture_data[index + 2] = 0.0;
+            for (uint32_t y = 0; y < size_y; y++)
+            {
+                for (uint32_t x = 0; x < size_x; x++, voxel_index++)
+                {
+                    uint32_t color_index = voxModel->voxel_data[voxel_index];
+                    bool is_voxel_solid = (color_index != 0);
+
+                    if (!is_voxel_solid) {
+                        continue;
+                    }
+
+                    glm::vec3 voxel_pos(y, z, x);
+
+                    voxel_pos += instance_offset - glm::vec3(size_y / 2.0, size_z / 2.0, size_x / 2.0);
+
+                    if (voxel_pos.y > 0.0) continue;
+
+                    ogt_vox_rgba color = voxScene->palette.color[color_index];
+                    glm::vec3 vertex_color(float(color.r), float(color.g), float(color.b));
+                    vertex_color /= 255.0f;
+
+                    int index = (x + y * TEXTURE_WIDTH) * 3;
+                    texture_data[index + 0] = vertex_color.r;
+                    texture_data[index + 1] = vertex_color.g;
+                    texture_data[index + 2] = vertex_color.b;
+                }
+            }
         }
     }
 
@@ -66,6 +100,8 @@ void ComputeChunk::generate_buffers()
     //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTextureSubImage2D(texture, 0, 0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT, GL_RGB, GL_FLOAT, texture_data.data());
     glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+
+    delete[] voxScene;
 }
 
 void ComputeChunk::render(glm::mat4 mvp, float current_frame)

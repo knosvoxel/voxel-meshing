@@ -40,6 +40,11 @@ set(IMGUI_DIR "${LIB_DIR}/imgui")
 add_subdirectory("${IMGUI_DIR}")
 target_link_libraries(${PROJECT_NAME} "imgui")
 
+# ogt_vox
+set(OGT_VOX_DIR "${LIB_DIR}/ogt_vox")
+add_subdirectory("${OGT_VOX_DIR}")
+target_link_libraries(${PROJECT_NAME} "ogt_vox")
+
 # include folder
 target_include_directories(${PROJECT_NAME} PRIVATE "${INCL_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${RES_DIR}")
