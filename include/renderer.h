@@ -13,6 +13,7 @@
 #include "chunk.h";
 #include "line.h";
 #include "screen_quad.h"
+#include "compute_chunk.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -51,6 +52,7 @@ public:
 	
 	Camera camera;
 	Chunk chunk;
+	ComputeChunk compute_chunk;
 
 	Line coord_x, coord_y, coord_z;
 	ScreenQuad quad;
