@@ -230,5 +230,5 @@ void Chunk::render(glm::mat4 mvp)
     glBindVertexArray(vao); //not necessary here because we only have a single VAO but doing it anyway to keep things more organized
 
     glDrawArrays(GL_TRIANGLES, 0, vertex_count);
-    glBindVertexArray(0); //no need to unbind it every time
+    glBindVertexArray(0);
 }

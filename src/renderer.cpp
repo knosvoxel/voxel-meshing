@@ -223,7 +223,7 @@ void Renderer::loop() {
         coord_z.render(mvp);
 
         // render main object
-        chunk.render(mvp);
+        //chunk.render(mvp);
         compute_chunk.render(mvp, currentFrame);
 
         // render screen quad

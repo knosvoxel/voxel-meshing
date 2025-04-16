@@ -12,6 +12,16 @@
 
 #include "ogt_wrapper.h"
 
+typedef struct Voxel {
+	glm::vec3 pos; // should be i16vec3
+	uint32_t color_index; // should be uint8_t
+};
+
+typedef struct Vertex {
+	glm::vec3 pos;
+	uint32_t color_index;
+};
+
 // holds data of a voxel mesh and logic to render it
 class ComputeChunk {
 public:
@@ -29,14 +39,17 @@ public:
 			color = std::move(other.color);
 			vbo = other.vbo;
 			vao = other.vao;
-			texture = other.texture;
+			voxel_ssbo = other.voxel_ssbo;
+			palette = other.palette;
 			shader = std::move(other.shader);
 			compute = std::move(other.compute);
+			voxel_data = std::move(other.voxel_data);
 
 			// Leave the other object in a valid state
 			other.vbo = 0;
 			other.vao = 0;
-			other.texture = 0;
+			other.voxel_ssbo = 0;
+			other.palette = 0;
 		}
 		return *this;
 	}
@@ -45,9 +58,10 @@ public:
 	void render(glm::mat4 mvp, float current_frame);
 
 	glm::vec3 color;
-	GLuint vbo, vao, texture;
+	GLuint vbo, vao, voxel_ssbo, palette;
 	Shader shader;
 
-	const unsigned int TEXTURE_WIDTH = 2000, TEXTURE_HEIGHT = 2000;
+	std::vector<Voxel> voxel_data;
+
 	ComputeShader compute;
 };

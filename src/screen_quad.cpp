@@ -72,7 +72,7 @@ void ScreenQuad::render(glm::mat4 mvp, float current_frame)
     glBindVertexArray(vao);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0); //no need to unbind it every time
+    glBindVertexArray(0);
 
 
 }

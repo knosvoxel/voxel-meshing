@@ -42,5 +42,5 @@ void Line::render(glm::mat4 mvp)
     glBindVertexArray(vao);
 
     glDrawArrays(GL_LINES, 0, 2);
-    glBindVertexArray(0); //no need to unbind it every time
+    glBindVertexArray(0);
 }
