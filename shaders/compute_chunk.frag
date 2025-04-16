@@ -1,14 +1,13 @@
 #version 460 core
 out vec4 FragColor;
 	
-//in vec2 TexCoords;
 flat in uint color_idx;
 	
-uniform sampler2D tex;
+uniform sampler2D palette;
 	
 void main()
-{             
-    vec4 color = texture(tex, vec2(color_idx / 256.0, 0.5));
-
-	FragColor = color;
+{         
+	float idx = uintBitsToFloat(color_idx);
+    vec3 texCol = texture(palette, vec2(idx / 256.0, 0.5)).rgb;      
+    FragColor = vec4(texCol, 1.0);
 }

@@ -69,10 +69,6 @@ void ComputeChunk::generate_buffers()
     glCreateBuffers(1, &vbo);
     glNamedBufferStorage(voxel_ssbo, voxel_data.size() * sizeof(Voxel), &voxel_data[0], GL_DYNAMIC_STORAGE_BIT);
 
-    GLint buffer_size = 0;
-    glGetNamedBufferParameteriv(voxel_ssbo, GL_BUFFER_SIZE, &buffer_size);
-    std::cout << "Buffer size: " << buffer_size << std::endl;
-
     glNamedBufferStorage(vbo, voxel_data.size() * sizeof(Vertex), nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
 
     // position attribute in the vertex shader
@@ -131,7 +127,7 @@ void ComputeChunk::render(glm::mat4 mvp, float current_frame)
     glBindTextureUnit(0, palette);
 
     shader.use();
-    shader.setInt("tex", 0);
+    shader.setInt("palette", 0);
 
     shader.setMat4("mvp", mvp);
 
