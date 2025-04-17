@@ -10,6 +10,13 @@ struct Vertex{
     uint color_index;
 };
 
+struct DrawArraysIndirectCommand{
+    uint count;
+    uint instanceCount;
+    uint first;
+    uint baseInstance;
+};
+
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout (binding = 0, std430) readonly buffer ssbo {
@@ -18,6 +25,10 @@ layout (binding = 0, std430) readonly buffer ssbo {
 
 layout (binding = 1, std430) writeonly buffer final_vertices {
     Vertex vertices[];
+};
+
+layout (binding = 2, std430) buffer indirect_buffer {
+    DrawArraysIndirectCommand indirect_command;
 };
 
 void main() {
@@ -31,4 +42,5 @@ void main() {
     v.color_index = uint(voxel.color_index);
 
     vertices[voxelIndex] = v; // TODO: should add three triangles instead
+    atomicAdd(indirect_command.count, 1);
 }

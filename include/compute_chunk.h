@@ -22,6 +22,13 @@ typedef struct Vertex {
 	uint32_t color_index;
 };
 
+typedef struct DrawArraysIndirectCommand {
+	GLuint count;
+	GLuint instanceCount;
+	GLuint first;
+	GLuint baseInstance;
+};
+
 // holds data of a voxel mesh and logic to render it
 class ComputeChunk {
 public:
@@ -40,6 +47,7 @@ public:
 			vbo = other.vbo;
 			vao = other.vao;
 			voxel_ssbo = other.voxel_ssbo;
+			indirect_command = other.indirect_command;
 			palette = other.palette;
 			shader = std::move(other.shader);
 			compute = std::move(other.compute);
@@ -49,6 +57,7 @@ public:
 			other.vbo = 0;
 			other.vao = 0;
 			other.voxel_ssbo = 0;
+			other.indirect_command = 0;
 			other.palette = 0;
 		}
 		return *this;
@@ -58,10 +67,10 @@ public:
 	void render(glm::mat4 mvp, float current_frame);
 
 	glm::vec3 color;
-	GLuint vbo, vao, voxel_ssbo, palette;
+	GLuint vbo, vao, voxel_ssbo, indirect_command, palette;
 	Shader shader;
 
-	std::vector<Voxel> voxel_data;
+	std::vector<Voxel> voxel_data; // TODO: Still needed after indirect command?
 
 	ComputeShader compute;
 };

@@ -5,6 +5,7 @@ ComputeChunk::~ComputeChunk()
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &voxel_ssbo);
+    glDeleteBuffers(1, &indirect_command);
     glDeleteTextures(1, &palette);
 }
 
@@ -60,16 +61,22 @@ void ComputeChunk::generate_buffers()
     //        << " color: " << int(curr.color_index) << std::endl;
     //}
 
-
-    ogt_vox_palette ogt_palette = voxScene->palette;
+    DrawArraysIndirectCommand indirect_data{};
+    indirect_data.count = 0;
+    indirect_data.instanceCount = 1;
+    indirect_data.first = 0;
+    indirect_data.baseInstance = 0;
 
     glCreateVertexArrays(1, &vao);
 
     glCreateBuffers(1, &voxel_ssbo);
     glCreateBuffers(1, &vbo);
-    glNamedBufferStorage(voxel_ssbo, voxel_data.size() * sizeof(Voxel), &voxel_data[0], GL_DYNAMIC_STORAGE_BIT);
+    glCreateBuffers(1, &indirect_command);
 
+    glNamedBufferStorage(voxel_ssbo, voxel_data.size() * sizeof(Voxel), &voxel_data[0], GL_DYNAMIC_STORAGE_BIT);
     glNamedBufferStorage(vbo, voxel_data.size() * sizeof(Vertex), nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+    glNamedBufferStorage(indirect_command, sizeof(DrawArraysIndirectCommand), &indirect_data,
+      GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
 
     // position attribute in the vertex shader
     glEnableVertexArrayAttrib(vao, 0);
@@ -82,6 +89,13 @@ void ComputeChunk::generate_buffers()
     glVertexArrayAttribFormat(vao, 1, 1, GL_UNSIGNED_INT, GL_FALSE, 3 * sizeof(GLfloat));
 
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
+
+    //compute shader call
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, indirect_command);
+
+    ogt_vox_palette ogt_palette = voxScene->palette;
 
     // texture generation with DSA
     glCreateTextures(GL_TEXTURE_2D, 1, &palette);
@@ -96,9 +110,7 @@ void ComputeChunk::generate_buffers()
     glTextureSubImage2D(palette, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE, ogt_palette.color);
     glBindImageTexture(0, palette, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
 
-     //compute shader call
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo);
+    //glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
 
     compute.use();
 
@@ -106,6 +118,7 @@ void ComputeChunk::generate_buffers()
 
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
 
     //std::cout << "<--------------------------->" << std::endl;
 
@@ -117,6 +130,9 @@ void ComputeChunk::generate_buffers()
     //}
 
     //glUnmapNamedBuffer(vbo);
+    const DrawArraysIndirectCommand* cmd = (const DrawArraysIndirectCommand*)glMapNamedBuffer(indirect_command, GL_READ_ONLY);
+    std::cout << "Indirect draw count: " << cmd->count << std::endl;
+    glUnmapNamedBuffer(indirect_command);
 
     ogt_vox_destroy_scene(voxScene);
 }
@@ -131,9 +147,9 @@ void ComputeChunk::render(glm::mat4 mvp, float current_frame)
 
     shader.setMat4("mvp", mvp);
 
-    // draws the triangle
     glBindVertexArray(vao);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_command);
+    glDrawArraysIndirect(GL_POINTS, 0);
 
-    glDrawArrays(GL_POINTS, 0, voxel_data.size());
     glBindVertexArray(0);
 }

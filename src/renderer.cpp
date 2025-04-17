@@ -158,6 +158,8 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     //glDepthFunc(GL_ALWAYS);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
     // Setup Dear ImGui context
     // -------------------------------------------
     IMGUI_CHECKVERSION();
