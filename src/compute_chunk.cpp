@@ -16,6 +16,7 @@ void ComputeChunk::generate_buffers()
     compute = ComputeShader("../shaders/compute_chunk.comp");
 
     const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/90mins.vox");
+    std::vector<Voxel> voxel_data;
 
     for (uint32_t inst_index = 0; inst_index < voxScene->num_instances; inst_index++) {
 
@@ -110,8 +111,6 @@ void ComputeChunk::generate_buffers()
     glTextureSubImage2D(palette, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE, ogt_palette.color);
     glBindImageTexture(0, palette, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
 
-    //glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
-
     compute.use();
 
     glDispatchCompute(voxel_data.size(), 1, 1);
@@ -120,19 +119,12 @@ void ComputeChunk::generate_buffers()
     glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
     glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
 
-    //std::cout << "<--------------------------->" << std::endl;
-
     //Vertex* mapped = (Vertex*)glMapNamedBuffer(vbo, GL_READ_ONLY);
     //for (size_t i = 0; i < 8; i++)
     //{
     //    std::cout << "pos: " << mapped[i].pos.x << ", " << mapped[i].pos.y << ", " << mapped[i].pos.z
     //        << " color: " << int(mapped[i].color_index) << std::endl;
     //}
-
-    //glUnmapNamedBuffer(vbo);
-    const DrawArraysIndirectCommand* cmd = (const DrawArraysIndirectCommand*)glMapNamedBuffer(indirect_command, GL_READ_ONLY);
-    std::cout << "Indirect draw count: " << cmd->count << std::endl;
-    glUnmapNamedBuffer(indirect_command);
 
     ogt_vox_destroy_scene(voxScene);
 }

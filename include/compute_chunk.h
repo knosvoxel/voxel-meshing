@@ -51,7 +51,6 @@ public:
 			palette = other.palette;
 			shader = std::move(other.shader);
 			compute = std::move(other.compute);
-			voxel_data = std::move(other.voxel_data);
 
 			// Leave the other object in a valid state
 			other.vbo = 0;
@@ -69,8 +68,6 @@ public:
 	glm::vec3 color;
 	GLuint vbo, vao, voxel_ssbo, indirect_command, palette;
 	Shader shader;
-
-	std::vector<Voxel> voxel_data; // TODO: Still needed after indirect command?
 
 	ComputeShader compute;
 };
