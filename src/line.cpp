@@ -38,7 +38,6 @@ void Line::render(glm::mat4 mvp)
 
     shader.setVec3("color", color);
 
-    // draws the triangle
     glBindVertexArray(vao);
 
     glDrawArrays(GL_LINES, 0, 2);

@@ -19,7 +19,9 @@ typedef struct Voxel {
 
 typedef struct Vertex {
 	glm::vec3 pos;
+	glm::vec3 normal;
 	uint32_t color_index;
+	uint32_t padding; // needed for std alignment to 32 bits. Worked w/o normal because it coincidentally was 16 bits
 };
 
 typedef struct DrawArraysIndirectCommand {

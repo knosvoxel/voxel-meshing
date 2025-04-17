@@ -15,7 +15,7 @@ void ComputeChunk::generate_buffers()
 
     compute = ComputeShader("../shaders/compute_chunk.comp");
 
-    const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/90mins.vox");
+    const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/32x32x32.vox");
     std::vector<Voxel> voxel_data;
 
     for (uint32_t inst_index = 0; inst_index < voxScene->num_instances; inst_index++) {
@@ -75,7 +75,7 @@ void ComputeChunk::generate_buffers()
     glCreateBuffers(1, &indirect_command);
 
     glNamedBufferStorage(voxel_ssbo, voxel_data.size() * sizeof(Voxel), &voxel_data[0], GL_DYNAMIC_STORAGE_BIT);
-    glNamedBufferStorage(vbo, voxel_data.size() * sizeof(Vertex), nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+    glNamedBufferStorage(vbo, voxel_data.size() * 36 * sizeof(Vertex), nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
     glNamedBufferStorage(indirect_command, sizeof(DrawArraysIndirectCommand), &indirect_data,
       GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
 
@@ -84,10 +84,20 @@ void ComputeChunk::generate_buffers()
     glVertexArrayAttribBinding(vao, 0, 0);
     glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
 
-    // color index
+    // normal
     glEnableVertexArrayAttrib(vao, 1);
     glVertexArrayAttribBinding(vao, 1, 0);
-    glVertexArrayAttribFormat(vao, 1, 1, GL_UNSIGNED_INT, GL_FALSE, 3 * sizeof(GLfloat));
+    glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat));
+
+    // color index
+    glEnableVertexArrayAttrib(vao, 2);
+    glVertexArrayAttribBinding(vao, 2, 0);
+    glVertexArrayAttribFormat(vao, 2, 1, GL_UNSIGNED_INT, GL_FALSE, 6 * sizeof(GLfloat));
+    
+    // padding
+    glEnableVertexArrayAttrib(vao, 3);
+    glVertexArrayAttribBinding(vao, 3, 0);
+    glVertexArrayAttribFormat(vao, 3, 1, GL_UNSIGNED_INT, GL_FALSE, 6 * sizeof(GLfloat) + sizeof(uint32_t));
 
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
 
@@ -115,9 +125,11 @@ void ComputeChunk::generate_buffers()
 
     glDispatchCompute(voxel_data.size(), 1, 1);
 
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-    glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
-    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
+    glMemoryBarrier(
+        GL_SHADER_STORAGE_BARRIER_BIT | 
+        GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT |
+        GL_COMMAND_BARRIER_BIT
+    );
 
     //Vertex* mapped = (Vertex*)glMapNamedBuffer(vbo, GL_READ_ONLY);
     //for (size_t i = 0; i < 8; i++)
@@ -136,12 +148,13 @@ void ComputeChunk::render(glm::mat4 mvp, float current_frame)
 
     shader.use();
     shader.setInt("palette", 0);
+    shader.setVec3("light_direction", -0.45f, -0.7f, -0.2f);
 
     shader.setMat4("mvp", mvp);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_command);
-    glDrawArraysIndirect(GL_POINTS, 0);
+    glDrawArraysIndirect(GL_TRIANGLES, 0);
 
     glBindVertexArray(0);
 }

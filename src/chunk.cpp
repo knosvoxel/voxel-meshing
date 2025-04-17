@@ -226,8 +226,8 @@ void Chunk::render(glm::mat4 mvp)
     shader.setVec3("light_direction", -0.45f, -0.7f, -0.2f);
     shader.setVec3("color", 1.0f, 1.0f, 1.0f);
 
-    // draws the triangle
-    glBindVertexArray(vao); //not necessary here because we only have a single VAO but doing it anyway to keep things more organized
+    // draws the triangles
+    glBindVertexArray(vao);
 
     glDrawArrays(GL_TRIANGLES, 0, vertex_count);
     glBindVertexArray(0);

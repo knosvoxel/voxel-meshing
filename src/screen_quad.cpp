@@ -68,7 +68,7 @@ void ScreenQuad::render(glm::mat4 mvp, float current_frame)
     shader.setInt("tex", 0);
     shader.setMat4("mvp", mvp);
 
-    // draws the triangle
+    // draws the triangles
     glBindVertexArray(vao);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
