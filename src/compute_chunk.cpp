@@ -11,9 +11,9 @@ ComputeChunk::~ComputeChunk()
 
 void ComputeChunk::generate_buffers()
 {
-    shader = Shader("../shaders/compute_chunk.vert", "../shaders/compute_chunk.frag");
+    shader = Shader("../shaders/compute_chunk/compute_chunk.vert", "../shaders/compute_chunk/compute_chunk.frag");
 
-    compute = ComputeShader("../shaders/compute_chunk.comp");
+    compute = ComputeShader("../shaders/compute_chunk/compute_chunk.comp");
 
     const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/90mins.vox");
     std::vector<Voxel> voxel_data;

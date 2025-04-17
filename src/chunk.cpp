@@ -17,7 +17,7 @@ Chunk::~Chunk()
 
 void Chunk::generate_buffers()
 {
-    shader = Shader("../shaders/main.vert", "../shaders/main.frag");
+    shader = Shader("../shaders/chunk/main.vert", "../shaders/chunk/main.frag");
 
     std::vector<Vertex> buffer;
 

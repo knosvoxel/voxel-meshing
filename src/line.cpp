@@ -4,7 +4,7 @@ Line::Line(glm::vec3 start_pos, glm::vec3 end_pos, glm::vec3 col)
 {
     color = col;
 
-    shader = Shader("../shaders/line.vert", "../shaders/line.frag");
+    shader = Shader("../shaders/line/line.vert", "../shaders/line/line.frag");
 
     glm::vec3 vertices[]{
         start_pos,

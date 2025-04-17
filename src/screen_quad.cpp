@@ -8,9 +8,9 @@ ScreenQuad::~ScreenQuad()
 
 void ScreenQuad::generate_buffers() 
 {
-    shader = Shader("../shaders/screenQuad.vert", "../shaders/screenQuad.frag");
+    shader = Shader("../shaders/screen_quad/screen_quad.vert", "../shaders/screen_quad/screen_quad.frag");
 
-    compute = ComputeShader("../shaders/compute.comp");
+    compute = ComputeShader("../shaders/screen_quad/screen_quad.comp");
 
     float vertices[]{
         -0.5, -0.5, 0.0, 0.0, 0.0, // vec3 pos vec2 uv
