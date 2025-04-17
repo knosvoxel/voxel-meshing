@@ -19,9 +19,9 @@ typedef struct Voxel {
 
 typedef struct Vertex {
 	glm::vec3 pos;
-	glm::vec3 normal;
 	uint32_t color_index;
-	uint32_t padding; // needed for std alignment to 32 bits. Worked w/o normal because it coincidentally was 16 bits
+	glm::vec3 normal;
+	uint32_t padding; // needed for std430 alignment to 32 bits. Worked w/o normal because it coincidentally was 16 bits
 };
 
 typedef struct DrawArraysIndirectCommand {
@@ -45,7 +45,6 @@ public:
 			if (vao) glDeleteVertexArrays(1, &vao);
 
 			// Move data
-			color = std::move(other.color);
 			vbo = other.vbo;
 			vao = other.vao;
 			voxel_ssbo = other.voxel_ssbo;
@@ -67,9 +66,8 @@ public:
 	void generate_buffers();
 	void render(glm::mat4 mvp, float current_frame);
 
-	glm::vec3 color;
 	GLuint vbo, vao, voxel_ssbo, indirect_command, palette;
+	
 	Shader shader;
-
 	ComputeShader compute;
 };

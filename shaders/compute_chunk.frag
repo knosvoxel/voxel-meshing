@@ -18,5 +18,5 @@ void main()
 
     vec3 result = diff * texCol;
 
-    FragColor = vec4(texCol, 1.0f);
+    FragColor = vec4(result, 1.0f);
 }

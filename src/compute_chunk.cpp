@@ -15,7 +15,7 @@ void ComputeChunk::generate_buffers()
 
     compute = ComputeShader("../shaders/compute_chunk.comp");
 
-    const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/32x32x32.vox");
+    const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/90mins.vox");
     std::vector<Voxel> voxel_data;
 
     for (uint32_t inst_index = 0; inst_index < voxScene->num_instances; inst_index++) {
@@ -84,20 +84,15 @@ void ComputeChunk::generate_buffers()
     glVertexArrayAttribBinding(vao, 0, 0);
     glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
 
-    // normal
+    // color index
     glEnableVertexArrayAttrib(vao, 1);
     glVertexArrayAttribBinding(vao, 1, 0);
-    glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat));
+    glVertexArrayAttribFormat(vao, 1, 1, GL_UNSIGNED_INT, GL_FALSE, 3 * sizeof(GLfloat));
 
-    // color index
+    // normal
     glEnableVertexArrayAttrib(vao, 2);
     glVertexArrayAttribBinding(vao, 2, 0);
-    glVertexArrayAttribFormat(vao, 2, 1, GL_UNSIGNED_INT, GL_FALSE, 6 * sizeof(GLfloat));
-    
-    // padding
-    glEnableVertexArrayAttrib(vao, 3);
-    glVertexArrayAttribBinding(vao, 3, 0);
-    glVertexArrayAttribFormat(vao, 3, 1, GL_UNSIGNED_INT, GL_FALSE, 6 * sizeof(GLfloat) + sizeof(uint32_t));
+    glVertexArrayAttribFormat(vao, 2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat) + sizeof(uint32_t));
 
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
 

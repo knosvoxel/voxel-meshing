@@ -7,8 +7,9 @@ struct VoxelData{
 
 struct Vertex{
     vec3 position;
-    vec3 normal;
     uint color_index;
+    vec3 normal; // padded to 16 bit
+    //uint padding;
 };
 
 struct DrawArraysIndirectCommand{
