@@ -2,7 +2,7 @@
 
 struct VoxelData{
     vec3 pos;
-    uint color_index;
+    uint data;
 };
 
 struct Vertex{
@@ -35,9 +35,10 @@ layout (binding = 2, std430) buffer indirect_buffer {
 
 void main() {
     uint voxelIndex = gl_GlobalInvocationID.x;
-    VoxelData data = voxels[voxelIndex];
-    uint col_idx = uint(data.color_index);
-    vec3 voxel_pos = vec3(data.pos);
+    VoxelData voxel_data = voxels[voxelIndex];
+    uint col_idx = uint(voxel_data.data >> 8); // third byte in data is the color index
+    uint neighbours = uint(voxel_data.data & 255); // last byte in data are the neighbourhood relations
+    vec3 voxel_pos = vec3(voxel_data.pos);
 
     vec3 normal_1 = vec3(-1.0, 0.0, 0.0);
     Vertex v1, v2, v3, v4, v5, v6;

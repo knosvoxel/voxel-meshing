@@ -1,5 +1,7 @@
 #include "compute_chunk.h"
 
+#include <bitset>
+
 ComputeChunk::~ComputeChunk()
 {
     glDeleteVertexArrays(1, &vao);
@@ -47,9 +49,73 @@ void ComputeChunk::generate_buffers()
 
                     glm::vec3 voxel_pos(y, z, x);
 
-                    voxel_pos += instance_offset - glm::vec3(size_y / 2.0, size_z / 2.0, size_x / 2.0);
+                    voxel_pos += instance_offset - glm::vec3(glm::floor(size_y / 2.0), glm::floor(size_z / 2.0), glm::floor(size_x / 2.0));
 
-                    voxel_data.push_back(Voxel{voxel_pos, (uint8_t)color_index});
+                    uint32_t neighbours = 0;
+
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    glm::vec3 neigh_x0(x, y - 1.0, z);
+                    bool add_x0 = (neigh_x0.y < 0.0);
+                    if (!add_x0) {
+                        uint32_t x0_index = (neigh_x0.z * size_y * size_x) + (neigh_x0.y * size_x) + neigh_x0.x;
+                        add_x0 = (voxModel->voxel_data[x0_index] == 0);
+                    }
+
+                    neighbours = add_x0 ? (neighbours << 1) | 1 : neighbours << 0;
+
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    glm::vec3 neigh_x1(x, y + 1.0, z);
+                    bool add_x1 = (neigh_x1.y >= size_y);
+                    if (!add_x1) {
+                        uint32_t x1_index = (neigh_x1.z * size_y * size_x) + (neigh_x1.y * size_x) + neigh_x1.x;
+                        add_x1 = (voxModel->voxel_data[x1_index] == 0);
+                    }
+
+                    neighbours = add_x1 ? (neighbours << 1) | 1 : neighbours << 0;
+
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    glm::vec3 neigh_z0(x - 1.0, y, z);
+                    bool add_z0 = (neigh_z0.x < 0.0);
+                    if (!add_z0) {
+                        uint32_t z0_index = (neigh_z0.z * size_y * size_x) + (neigh_z0.y * size_x) + neigh_z0.x;
+                        add_z0 = (voxModel->voxel_data[z0_index] == 0);
+                    };
+
+                    neighbours = add_z0 ? (neighbours << 1) | 1 : neighbours << 0;
+
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    glm::vec3 neigh_z1(x + 1.0, y, z);
+                    bool add_z1 = (neigh_z1.x >= size_x);
+                    if (!add_z1) {
+                        uint32_t z1_index = (neigh_z1.z * size_y * size_x) + (neigh_z1.y * size_x) + neigh_z1.x;
+                        add_z1 = (voxModel->voxel_data[z1_index] == 0);
+                    }
+
+                    neighbours = add_z1 ? (neighbours << 1) | 1 : neighbours << 0;
+
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    glm::vec3 neigh_y0(x, y, z - 1.0);
+                    bool add_y0 = (neigh_y0.z < 0.0);
+                    if (!add_y0) {
+                        uint32_t y0_index = (neigh_y0.z * size_y * size_x) + (neigh_y0.y * size_x) + neigh_y0.x;
+                        add_y0 = (voxModel->voxel_data[y0_index] == 0);
+                    }
+
+                    neighbours = add_y0 ? (neighbours << 1) | 1 : neighbours << 0;
+
+                    //correct order: (y, z, x) : x -> y / y -> z / z -> x
+                    glm::vec3 neigh_y1(x, y, z + 1.0);
+                    bool add_y1 = (neigh_y1.z >= size_z);
+                    if (!add_y1) {
+                        uint32_t y1_index = (neigh_y1.z * size_y * size_x) + (neigh_y1.y * size_x) + neigh_y1.x;
+                        add_y1 = (voxModel->voxel_data[y1_index] == 0);
+                    }
+
+                    neighbours = add_y1 ? (neighbours << 1) | 1 : neighbours << 0;
+
+                    uint32_t data = (color_index << 8) | neighbours;
+
+                    voxel_data.push_back(Voxel{voxel_pos, data});
                 }
             }
         }
