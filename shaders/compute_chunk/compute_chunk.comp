@@ -40,189 +40,213 @@ void main() {
     uint neighbours = uint(voxel_data.data & 255); // last byte in data are the neighbourhood relations
     vec3 voxel_pos = vec3(voxel_data.pos);
 
-    vec3 normal_1 = vec3(-1.0, 0.0, 0.0);
-    Vertex v1, v2, v3, v4, v5, v6;
-    v1.position = voxel_pos + vec3(0.0, 1.0, 1.0);
-    v1.normal = normal_1;
-    v1.color_index = col_idx;
-    v2.position = voxel_pos;
-    v2.normal = normal_1;
-    v2.color_index = col_idx;
-    v3.position = voxel_pos + vec3(0.0, 1.0, 0.0);
-    v3.normal = normal_1;
-    v3.color_index = col_idx;
+    uint verices_to_add = 0;
 
-    v4.position = voxel_pos;    
-    v4.normal = normal_1;
-    v4.color_index = col_idx;
-    v5.position = voxel_pos + vec3(0.0, 1.0, 1.0); 
-    v5.normal = normal_1;
-    v5.color_index = col_idx;
-    v6.position = voxel_pos + vec3(0.0, 0.0, 1.0);
-    v6.normal = normal_1;
-    v6.color_index = col_idx;
+    if (((neighbours >> 7) & 1) == 1) verices_to_add += 6;
+    if (((neighbours >> 6) & 1) == 1) verices_to_add += 6;
+    if (((neighbours >> 5) & 1) == 1) verices_to_add += 6;
+    if (((neighbours >> 4) & 1) == 1) verices_to_add += 6;
+    if (((neighbours >> 3) & 1) == 1) verices_to_add += 6;
+    if (((neighbours >> 2) & 1) == 1) verices_to_add += 6;
 
-    vertices[voxelIndex * 36] = v1;
-    vertices[voxelIndex * 36 + 1] = v2;
-    vertices[voxelIndex * 36 + 2] = v3;
-    vertices[voxelIndex * 36 + 3] = v4;
-    vertices[voxelIndex * 36 + 4] = v5;
-    vertices[voxelIndex * 36 + 5] = v6;
+    uint local_base_idx = atomicAdd(indirect_command.count, verices_to_add);
 
-    atomicAdd(indirect_command.count, 6);
+    // x -> z -> y
+    if (((neighbours >> 7) & 1) == 1){
+        vec3 normal_1 = vec3(-1.0, 0.0, 0.0);
+        Vertex v1, v2, v3, v4, v5, v6;
+        v1.position = voxel_pos + vec3(0.0, 1.0, 1.0);
+        v1.normal = normal_1;
+        v1.color_index = col_idx;
+        v2.position = voxel_pos;
+        v2.normal = normal_1;
+        v2.color_index = col_idx;
+        v3.position = voxel_pos + vec3(0.0, 1.0, 0.0);
+        v3.normal = normal_1;
+        v3.color_index = col_idx;
 
-    vec3 normal_2 = vec3(1.0, 0.0, 0.0);
-    Vertex v7, v8, v9, v10, v11, v12;
-    v7.position = voxel_pos + vec3(1.0, 1.0, 1.0);
-    v7.normal = normal_2;
-    v7.color_index = col_idx;
-    v8.position = voxel_pos + vec3(1.0, 1.0, 0.0);
-    v8.normal = normal_2;
-    v8.color_index = col_idx;
-    v9.position = voxel_pos + vec3(1.0, 0.0, 0.0);
-    v9.normal = normal_2;
-    v9.color_index = col_idx;
+        v4.position = voxel_pos;    
+        v4.normal = normal_1;
+        v4.color_index = col_idx;
+        v5.position = voxel_pos + vec3(0.0, 1.0, 1.0); 
+        v5.normal = normal_1;
+        v5.color_index = col_idx;
+        v6.position = voxel_pos + vec3(0.0, 0.0, 1.0);
+        v6.normal = normal_1;
+        v6.color_index = col_idx;
 
-    v10.position = voxel_pos + vec3(1.0, 0.0, 0.0);
-    v10.normal = normal_2;
-    v10.color_index = col_idx;
-    v11.position = voxel_pos + vec3(1.0, 0.0, 1.0);
-    v11.normal = normal_2;
-    v11.color_index = col_idx;
-    v12.position = voxel_pos + vec3(1.0, 1.0, 1.0);
-    v12.normal = normal_2;
-    v12.color_index = col_idx;
+        vertices[local_base_idx] = v1;
+        vertices[local_base_idx + 1] = v2;
+        vertices[local_base_idx + 2] = v3;
+        vertices[local_base_idx + 3] = v4;
+        vertices[local_base_idx + 4] = v5;
+        vertices[local_base_idx + 5] = v6;
 
-    vertices[voxelIndex * 36 + 6] = v7;
-    vertices[voxelIndex * 36 + 7] = v8;
-    vertices[voxelIndex * 36 + 8] = v9;
-    vertices[voxelIndex * 36 + 9] = v10;
-    vertices[voxelIndex * 36 + 10] = v11;
-    vertices[voxelIndex * 36 + 11] = v12;
+        local_base_idx += 6;
+    }
 
-    atomicAdd(indirect_command.count, 6);
+    if (((neighbours >> 6) & 1) == 1){
+        vec3 normal_2 = vec3(1.0, 0.0, 0.0);
+        Vertex v7, v8, v9, v10, v11, v12;
+        v7.position = voxel_pos + vec3(1.0, 1.0, 1.0);
+        v7.normal = normal_2;
+        v7.color_index = col_idx;
+        v8.position = voxel_pos + vec3(1.0, 1.0, 0.0);
+        v8.normal = normal_2;
+        v8.color_index = col_idx;
+        v9.position = voxel_pos + vec3(1.0, 0.0, 0.0);
+        v9.normal = normal_2;
+        v9.color_index = col_idx;
 
-    vec3 normal_3 = vec3(0.0, 0.0, -1.0);
-    Vertex v13, v14, v15, v16, v17, v18;
-    v13.position = voxel_pos + vec3(0.0, 0.0, 0.0);
-    v13.normal = normal_3;
-    v13.color_index = col_idx;
-    v14.position = voxel_pos + vec3(1.0, 0.0, 0.0);
-    v14.normal = normal_3;
-    v14.color_index = col_idx;
-    v15.position = voxel_pos + vec3(1.0, 1.0, 0.0);
-    v15.normal = normal_3;
-    v15.color_index = col_idx;
+        v10.position = voxel_pos + vec3(1.0, 0.0, 0.0);
+        v10.normal = normal_2;
+        v10.color_index = col_idx;
+        v11.position = voxel_pos + vec3(1.0, 0.0, 1.0);
+        v11.normal = normal_2;
+        v11.color_index = col_idx;
+        v12.position = voxel_pos + vec3(1.0, 1.0, 1.0);
+        v12.normal = normal_2;
+        v12.color_index = col_idx;
+        
+        vertices[local_base_idx] = v7;
+        vertices[local_base_idx + 1] = v8;
+        vertices[local_base_idx + 2] = v9;
+        vertices[local_base_idx + 3] = v10;
+        vertices[local_base_idx + 4] = v11;
+        vertices[local_base_idx + 5] = v12;
 
-    v16.position = voxel_pos + vec3(1.0, 1.0, 0.0);
-    v16.normal = normal_3;
-    v16.color_index = col_idx;
-    v17.position = voxel_pos + vec3(0.0, 1.0, 0.0);
-    v17.normal = normal_3;
-    v17.color_index = col_idx;
-    v18.position = voxel_pos + vec3(0.0, 0.0, 0.0);
-    v18.normal = normal_3;
-    v18.color_index = col_idx;
+        local_base_idx += 6;
+    }
 
-    vertices[voxelIndex * 36 + 12] = v13;
-    vertices[voxelIndex * 36 + 13] = v14;
-    vertices[voxelIndex * 36 + 14] = v15;
-    vertices[voxelIndex * 36 + 15] = v16;
-    vertices[voxelIndex * 36 + 16] = v17;
-    vertices[voxelIndex * 36 + 17] = v18;
+    if (((neighbours >> 5) & 1) == 1){
+        vec3 normal_3 = vec3(0.0, 0.0, -1.0);
+        Vertex v13, v14, v15, v16, v17, v18;
+        v13.position = voxel_pos + vec3(0.0, 0.0, 0.0);
+        v13.normal = normal_3;
+        v13.color_index = col_idx;
+        v14.position = voxel_pos + vec3(1.0, 0.0, 0.0);
+        v14.normal = normal_3;
+        v14.color_index = col_idx;
+        v15.position = voxel_pos + vec3(1.0, 1.0, 0.0);
+        v15.normal = normal_3;
+        v15.color_index = col_idx;
 
-    atomicAdd(indirect_command.count, 6);
+        v16.position = voxel_pos + vec3(1.0, 1.0, 0.0);
+        v16.normal = normal_3;
+        v16.color_index = col_idx;
+        v17.position = voxel_pos + vec3(0.0, 1.0, 0.0);
+        v17.normal = normal_3;
+        v17.color_index = col_idx;
+        v18.position = voxel_pos + vec3(0.0, 0.0, 0.0);
+        v18.normal = normal_3;
+        v18.color_index = col_idx;
 
-    vec3 normal_4 = vec3(0.0, 0.0, 1.0);
-    Vertex v19, v20, v21, v22, v23, v24;
-    v19.position = voxel_pos + vec3(0.0, 0.0, 1.0);
-    v19.normal = normal_4;
-    v19.color_index = col_idx;
-    v20.position = voxel_pos + vec3(1.0, 1.0, 1.0);
-    v20.normal = normal_4;
-    v20.color_index = col_idx;
-    v21.position = voxel_pos + vec3(1.0, 0.0, 1.0);
-    v21.normal = normal_4;
-    v21.color_index = col_idx;
+        vertices[local_base_idx] = v13;
+        vertices[local_base_idx + 1] = v14;
+        vertices[local_base_idx + 2] = v15;
+        vertices[local_base_idx + 3] = v16;
+        vertices[local_base_idx + 4] = v17;
+        vertices[local_base_idx + 5] = v18;
 
-    v22.position = voxel_pos + vec3(1.0, 1.0, 1.0);
-    v22.normal = normal_4;
-    v22.color_index = col_idx;
-    v23.position = voxel_pos + vec3(0.0, 0.0, 1.0);
-    v23.normal = normal_4;
-    v23.color_index = col_idx;
-    v24.position = voxel_pos + vec3(0.0, 1.0, 1.0);
-    v24.normal = normal_4;
-    v24.color_index = col_idx;
+        local_base_idx += 6;
+    }
 
-    vertices[voxelIndex * 36 + 18] = v19;
-    vertices[voxelIndex * 36 + 19] = v20;
-    vertices[voxelIndex * 36 + 20] = v21;
-    vertices[voxelIndex * 36 + 21] = v22;
-    vertices[voxelIndex * 36 + 22] = v23;
-    vertices[voxelIndex * 36 + 23] = v24;
+    if (((neighbours >> 4) & 1) == 1){
+        vec3 normal_4 = vec3(0.0, 0.0, 1.0);
+        Vertex v19, v20, v21, v22, v23, v24;
+        v19.position = voxel_pos + vec3(0.0, 0.0, 1.0);
+        v19.normal = normal_4;
+        v19.color_index = col_idx;
+        v20.position = voxel_pos + vec3(1.0, 1.0, 1.0);
+        v20.normal = normal_4;
+        v20.color_index = col_idx;
+        v21.position = voxel_pos + vec3(1.0, 0.0, 1.0);
+        v21.normal = normal_4;
+        v21.color_index = col_idx;
 
-    atomicAdd(indirect_command.count, 6);
+        v22.position = voxel_pos + vec3(1.0, 1.0, 1.0);
+        v22.normal = normal_4;
+        v22.color_index = col_idx;
+        v23.position = voxel_pos + vec3(0.0, 0.0, 1.0);
+        v23.normal = normal_4;
+        v23.color_index = col_idx;
+        v24.position = voxel_pos + vec3(0.0, 1.0, 1.0);
+        v24.normal = normal_4;
+        v24.color_index = col_idx;
 
-    vec3 normal_5 = vec3(0.0, -1.0, 0.0);
-    Vertex v25, v26, v27, v28, v29, v30;
-    v25.position = voxel_pos + vec3(0.0, 0.0, 0.0);
-    v25.normal = normal_5;
-    v25.color_index = col_idx;
-    v26.position = voxel_pos + vec3(1.0, 0.0, 1.0);
-    v26.normal = normal_5;
-    v26.color_index = col_idx;
-    v27.position = voxel_pos + vec3(1.0, 0.0, 0.0);
-    v27.normal = normal_5;
-    v27.color_index = col_idx;
+        vertices[local_base_idx] = v19;
+        vertices[local_base_idx + 1] = v20;
+        vertices[local_base_idx + 2] = v21;
+        vertices[local_base_idx + 3] = v22;
+        vertices[local_base_idx + 4] = v23;
+        vertices[local_base_idx + 5] = v24;
 
-    v28.position = voxel_pos + vec3(1.0, 0.0, 1.0);
-    v28.normal = normal_5;
-    v28.color_index = col_idx;
-    v29.position = voxel_pos + vec3(0.0, 0.0, 0.0);
-    v29.normal = normal_5;
-    v29.color_index = col_idx;
-    v30.position = voxel_pos + vec3(0.0, 0.0, 1.0);
-    v30.normal = normal_5;
-    v30.color_index = col_idx;
+        local_base_idx += 6;
+    }
+    
+    if (((neighbours >> 3) & 1) == 1){
+        vec3 normal_5 = vec3(0.0, -1.0, 0.0);
+        Vertex v25, v26, v27, v28, v29, v30;
+        v25.position = voxel_pos + vec3(0.0, 0.0, 0.0);
+        v25.normal = normal_5;
+        v25.color_index = col_idx;
+        v26.position = voxel_pos + vec3(1.0, 0.0, 1.0);
+        v26.normal = normal_5;
+        v26.color_index = col_idx;
+        v27.position = voxel_pos + vec3(1.0, 0.0, 0.0);
+        v27.normal = normal_5;
+        v27.color_index = col_idx;
 
-    vertices[voxelIndex * 36 + 24] = v25;
-    vertices[voxelIndex * 36 + 25] = v26;
-    vertices[voxelIndex * 36 + 26] = v27;
-    vertices[voxelIndex * 36 + 27] = v28;
-    vertices[voxelIndex * 36 + 28] = v29;
-    vertices[voxelIndex * 36 + 29] = v30;
+        v28.position = voxel_pos + vec3(1.0, 0.0, 1.0);
+        v28.normal = normal_5;
+        v28.color_index = col_idx;
+        v29.position = voxel_pos + vec3(0.0, 0.0, 0.0);
+        v29.normal = normal_5;
+        v29.color_index = col_idx;
+        v30.position = voxel_pos + vec3(0.0, 0.0, 1.0);
+        v30.normal = normal_5;
+        v30.color_index = col_idx;
 
-    atomicAdd(indirect_command.count, 6);
+        vertices[local_base_idx] = v25;
+        vertices[local_base_idx + 1] = v26;
+        vertices[local_base_idx + 2] = v27;
+        vertices[local_base_idx + 3] = v28;
+        vertices[local_base_idx + 4] = v29;
+        vertices[local_base_idx + 5] = v30;
 
-    vec3 normal_6 = vec3(0.0, 1.0, 0.0);
-    Vertex v31, v32, v33, v34, v35, v36;
-    v31.position = voxel_pos + vec3(0.0, 1.0, 0.0);
-    v31.normal = normal_6;
-    v31.color_index = col_idx;
-    v32.position = voxel_pos + vec3(1.0, 1.0, 0.0);
-    v32.normal = normal_6;
-    v32.color_index = col_idx;
-    v33.position = voxel_pos + vec3(1.0, 1.0, 1.0);
-    v33.normal = normal_6;
-    v33.color_index = col_idx;
+        local_base_idx += 6;
+    }
+    
+    if (((neighbours >> 2) & 1) == 1){
+        vec3 normal_6 = vec3(0.0, 1.0, 0.0);
+        Vertex v31, v32, v33, v34, v35, v36;
+        v31.position = voxel_pos + vec3(0.0, 1.0, 0.0);
+        v31.normal = normal_6;
+        v31.color_index = col_idx;
+        v32.position = voxel_pos + vec3(1.0, 1.0, 0.0);
+        v32.normal = normal_6;
+        v32.color_index = col_idx;
+        v33.position = voxel_pos + vec3(1.0, 1.0, 1.0);
+        v33.normal = normal_6;
+        v33.color_index = col_idx;
 
-    v34.position = voxel_pos + vec3(1.0, 1.0, 1.0);
-    v34.normal = normal_6;
-    v34.color_index = col_idx;
-    v35.position = voxel_pos + vec3(0.0, 1.0, 1.0);
-    v35.normal = normal_6;
-    v35.color_index = col_idx;
-    v36.position = voxel_pos + vec3(0.0, 1.0, 0.0);
-    v36.normal = normal_6;
-    v36.color_index = col_idx;
+        v34.position = voxel_pos + vec3(1.0, 1.0, 1.0);
+        v34.normal = normal_6;
+        v34.color_index = col_idx;
+        v35.position = voxel_pos + vec3(0.0, 1.0, 1.0);
+        v35.normal = normal_6;
+        v35.color_index = col_idx;
+        v36.position = voxel_pos + vec3(0.0, 1.0, 0.0);
+        v36.normal = normal_6;
+        v36.color_index = col_idx;
 
-    vertices[voxelIndex * 36 + 30] = v31;
-    vertices[voxelIndex * 36 + 31] = v32;
-    vertices[voxelIndex * 36 + 32] = v33;
-    vertices[voxelIndex * 36 + 33] = v34;
-    vertices[voxelIndex * 36 + 34] = v35;
-    vertices[voxelIndex * 36 + 35] = v36;
+        vertices[local_base_idx] = v31;
+        vertices[local_base_idx + 1] = v32;
+        vertices[local_base_idx + 2] = v33;
+        vertices[local_base_idx + 3] = v34;
+        vertices[local_base_idx + 4] = v35;
+        vertices[local_base_idx + 5] = v36;
 
-    atomicAdd(indirect_command.count, 6);
+        local_base_idx += 6;
+    }
 }

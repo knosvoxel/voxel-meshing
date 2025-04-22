@@ -61,7 +61,7 @@ void ComputeChunk::generate_buffers()
                         add_x0 = (voxModel->voxel_data[x0_index] == 0);
                     }
 
-                    neighbours = add_x0 ? (neighbours << 1) | 1 : neighbours << 0;
+                    neighbours = add_x0 ? (neighbours << 1) | 1 : neighbours << 1;
 
                     //correct order: (y, z, x) : x -> y / y -> z / z -> x
                     glm::vec3 neigh_x1(x, y + 1.0, z);
@@ -71,7 +71,7 @@ void ComputeChunk::generate_buffers()
                         add_x1 = (voxModel->voxel_data[x1_index] == 0);
                     }
 
-                    neighbours = add_x1 ? (neighbours << 1) | 1 : neighbours << 0;
+                    neighbours = add_x1 ? (neighbours << 1) | 1 : neighbours << 1;
 
                     //correct order: (y, z, x) : x -> y / y -> z / z -> x
                     glm::vec3 neigh_z0(x - 1.0, y, z);
@@ -81,7 +81,7 @@ void ComputeChunk::generate_buffers()
                         add_z0 = (voxModel->voxel_data[z0_index] == 0);
                     };
 
-                    neighbours = add_z0 ? (neighbours << 1) | 1 : neighbours << 0;
+                    neighbours = add_z0 ? (neighbours << 1) | 1 : neighbours << 1;
 
                     //correct order: (y, z, x) : x -> y / y -> z / z -> x
                     glm::vec3 neigh_z1(x + 1.0, y, z);
@@ -91,7 +91,7 @@ void ComputeChunk::generate_buffers()
                         add_z1 = (voxModel->voxel_data[z1_index] == 0);
                     }
 
-                    neighbours = add_z1 ? (neighbours << 1) | 1 : neighbours << 0;
+                    neighbours = add_z1 ? (neighbours << 1) | 1 : neighbours << 1;
 
                     //correct order: (y, z, x) : x -> y / y -> z / z -> x
                     glm::vec3 neigh_y0(x, y, z - 1.0);
@@ -101,7 +101,7 @@ void ComputeChunk::generate_buffers()
                         add_y0 = (voxModel->voxel_data[y0_index] == 0);
                     }
 
-                    neighbours = add_y0 ? (neighbours << 1) | 1 : neighbours << 0;
+                    neighbours = add_y0 ? (neighbours << 1) | 1 : neighbours << 1;
 
                     //correct order: (y, z, x) : x -> y / y -> z / z -> x
                     glm::vec3 neigh_y1(x, y, z + 1.0);
@@ -111,7 +111,9 @@ void ComputeChunk::generate_buffers()
                         add_y1 = (voxModel->voxel_data[y1_index] == 0);
                     }
 
-                    neighbours = add_y1 ? (neighbours << 1) | 1 : neighbours << 0;
+                    neighbours = add_y1 ? (neighbours << 1) | 1 : neighbours << 1;
+
+                    neighbours = neighbours << 2; // last values are 0 to fill full byte
 
                     uint32_t data = (color_index << 8) | neighbours;
 
@@ -120,13 +122,6 @@ void ComputeChunk::generate_buffers()
             }
         }
     }
-
-    //for (size_t i = 0; i < voxel_data.size(); i++)
-    //{
-    //    auto curr = voxel_data.at(i);
-    //    std::cout << "pos: " << curr.pos.x << ", " << curr.pos.y << ", " << curr.pos.z
-    //        << " color: " << int(curr.color_index) << std::endl;
-    //}
 
     DrawArraysIndirectCommand indirect_data{};
     indirect_data.count = 0;
@@ -141,7 +136,8 @@ void ComputeChunk::generate_buffers()
     glCreateBuffers(1, &indirect_command);
 
     glNamedBufferStorage(voxel_ssbo, voxel_data.size() * sizeof(Voxel), &voxel_data[0], GL_DYNAMIC_STORAGE_BIT);
-    glNamedBufferStorage(vbo, voxel_data.size() * 36 * sizeof(Vertex), nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+    glNamedBufferStorage(vbo, voxel_data.size() * 36 * sizeof(Vertex), nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT); 
+    // TODO: size adjustable somehow?
     glNamedBufferStorage(indirect_command, sizeof(DrawArraysIndirectCommand), &indirect_data,
       GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
 
@@ -191,13 +187,6 @@ void ComputeChunk::generate_buffers()
         GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT |
         GL_COMMAND_BARRIER_BIT
     );
-
-    //Vertex* mapped = (Vertex*)glMapNamedBuffer(vbo, GL_READ_ONLY);
-    //for (size_t i = 0; i < 8; i++)
-    //{
-    //    std::cout << "pos: " << mapped[i].pos.x << ", " << mapped[i].pos.y << ", " << mapped[i].pos.z
-    //        << " color: " << int(mapped[i].color_index) << std::endl;
-    //}
 
     ogt_vox_destroy_scene(voxScene);
 }
