@@ -17,7 +17,7 @@ void ComputeChunk::generate_buffers()
 
     compute = ComputeShader("../shaders/compute_chunk/compute_chunk.comp");
 
-    const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/90mins.vox");
+    const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/45mins.vox");
     std::vector<Voxel> voxel_data;
 
     for (uint32_t inst_index = 0; inst_index < voxScene->num_instances; inst_index++) {
@@ -30,9 +30,14 @@ void ComputeChunk::generate_buffers()
 
         uint32_t voxel_index = 0;
 
+
+        // TODO: use these for work group size
         uint32_t size_x = voxModel->size_x;
         uint32_t size_y = voxModel->size_y;
         uint32_t size_z = voxModel->size_z;
+
+        // bind voxel_data of current instance to buffer
+        // count vertex count of instance in compute shader to use as base offset for next instance's vertices
 
         for (uint32_t z = 0; z < size_z; z++)
         {

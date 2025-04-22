@@ -51,7 +51,6 @@ public:
 	glm::vec2 window_size;
 	
 	Camera camera;
-	Chunk chunk;
 	ComputeChunk compute_chunk;
 
 	Line coord_x, coord_y, coord_z;

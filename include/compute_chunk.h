@@ -14,8 +14,7 @@
 
 typedef struct Voxel {
 	glm::vec3 pos; // should be i16vec3
-	uint32_t data; // should be uint8_t
-	//uint32_t neighbours;
+	uint32_t data; // Bytes | 0: 00000000 | 1: 00000000 | 2: color index on palette | 3: voxel neighbourhood relations |
 };
 
 typedef struct Vertex {
