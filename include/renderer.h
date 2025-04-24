@@ -13,7 +13,7 @@
 #include "chunk.h";
 #include "line.h";
 #include "screen_quad.h"
-#include "compute_chunk.h"
+#include "compute_chunk_v2.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -51,7 +51,7 @@ public:
 	glm::vec2 window_size;
 	
 	Camera camera;
-	ComputeChunk compute_chunk;
+	ComputeChunkV2 compute_chunk;
 
 	Line coord_x, coord_y, coord_z;
 	ScreenQuad quad;

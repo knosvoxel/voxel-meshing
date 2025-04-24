@@ -10,7 +10,7 @@ set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
 set(SOURCES "${SRC_DIR}/main.cpp" "${SRC_DIR}/renderer.cpp"
 "${SRC_DIR}/learnopengl/camera.cpp" "${SRC_DIR}/chunk.cpp"
 "${SRC_DIR}/line.cpp" "${SRC_DIR}/screen_quad.cpp"
-"${SRC_DIR}/compute_chunk.cpp")
+"${SRC_DIR}/compute_chunk.cpp" "${SRC_DIR}/compute_chunk_v2.cpp")
 
 # Executable definition and properties
 add_executable(${PROJECT_NAME} ${SOURCES})
