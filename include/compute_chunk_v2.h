@@ -21,7 +21,7 @@ typedef struct Vertex {
 	glm::vec3 pos;
 	uint32_t color_index;
 	glm::vec3 normal;
-	uint32_t padding; // needed for std430 alignment to 32 bits. Worked w/o normal because it coincidentally was 16 bits
+	uint32_t padding; // needed for std430 alignment to 32 bytes
 };
 
 typedef struct DrawArraysIndirectCommand {
