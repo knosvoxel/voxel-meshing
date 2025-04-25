@@ -1,7 +1,5 @@
 #include "compute_chunk.h"
 
-#include <bitset>
-
 ComputeChunk::~ComputeChunk()
 {
     glDeleteVertexArrays(1, &vao);

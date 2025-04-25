@@ -1,13 +1,12 @@
 #include "compute_chunk_v2.h"
 
-#include <bitset>
-
 ComputeChunkV2::~ComputeChunkV2()
 {
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &voxel_ssbo);
     glDeleteBuffers(1, &indirect_command);
+    glDeleteBuffers(1, &instance_data_buffer);
     glDeleteTextures(1, &palette);
 }
 
@@ -47,7 +46,7 @@ void ComputeChunkV2::generate_buffers()
     glCreateBuffers(1, &indirect_command);
     glCreateBuffers(1, &instance_data_buffer);
 
-    glNamedBufferStorage(voxel_ssbo, sizeof(uint8_t) * size_x * size_y * size_z, &voxel_data[0], GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(voxel_ssbo, sizeof(uint8_t) * size_x * size_y * size_z, voxel_data, GL_DYNAMIC_STORAGE_BIT);
     glNamedBufferStorage(vbo, sizeof(Vertex) * size_x * size_y * size_z * 36, nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
     glNamedBufferStorage(indirect_command, sizeof(DrawArraysIndirectCommand), &indirect_data,
       GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
