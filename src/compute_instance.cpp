@@ -1,6 +1,6 @@
-#include "compute_chunk_v2.h"
+#include "compute_instance.h"
 
-ComputeChunkV2::~ComputeChunkV2()
+ComputeInstance::~ComputeInstance()
 {
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
@@ -10,18 +10,18 @@ ComputeChunkV2::~ComputeChunkV2()
     glDeleteTextures(1, &palette);
 }
 
-void ComputeChunkV2::generate_buffers()
+void ComputeInstance::generate_buffers(int instance_id)
 {
-    shader = Shader("../shaders/compute_chunk/compute_chunk.vert", "../shaders/compute_chunk/compute_chunk.frag");
+    shader = Shader("../shaders/compute/compute_chunk.vert", "../shaders/compute/compute_chunk.frag");
 
-    compute = ComputeShader("../shaders/compute_chunk/compute_chunk_v2.comp");
+    compute = ComputeShader("../shaders/compute/compute_chunk_v2.comp");
 
     const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/32x32x32.vox");
-    const ogt_vox_instance* voxInstance = &voxScene->instances[0]; // currently only with one instance
+    const ogt_vox_instance* voxInstance = &voxScene->instances[instance_id]; // currently only with one instance
     const ogt_vox_model* voxModel = voxScene->models[voxInstance->model_index];
     ogt_vox_transform instance_transform = voxInstance->transform;
 
-    glm::vec3 instance_offset(instance_transform.m30, instance_transform.m31, instance_transform.m32);
+    glm::vec4 instance_offset(instance_transform.m30, instance_transform.m31, instance_transform.m32, 0);
 
     uint32_t size_x = voxModel->size_x;
     uint32_t size_y = voxModel->size_y;
@@ -30,7 +30,7 @@ void ComputeChunkV2::generate_buffers()
     const uint8_t* voxel_data = voxModel->voxel_data;
 
     InstanceData instance_data{};
-    instance_data.instance_size = glm::vec3(size_x, size_y, size_z);
+    instance_data.instance_size = glm::vec4(size_x, size_y, size_z, 0);
     instance_data.instance_position_offset = instance_offset;
 
     DrawArraysIndirectCommand indirect_data{};
@@ -103,7 +103,7 @@ void ComputeChunkV2::generate_buffers()
     ogt_vox_destroy_scene(voxScene);
 }
 
-void ComputeChunkV2::render(glm::mat4 mvp, float current_frame)
+void ComputeInstance::render(glm::mat4 mvp, float current_frame)
 {
     // fragment/ vertex shader calls
     glBindTextureUnit(0, palette);

@@ -13,8 +13,8 @@
 #include "ogt_wrapper.h"
 
 typedef struct InstanceData {
-	glm::vec3 instance_size;
-	glm::vec3 instance_position_offset;
+	glm::vec4 instance_size;
+	glm::vec4 instance_position_offset;
 };
 
 typedef struct Vertex {
@@ -32,13 +32,13 @@ typedef struct DrawArraysIndirectCommand {
 };
 
 // holds data of a voxel mesh and logic to render it
-class ComputeChunkV2 {
+class ComputeInstance {
 public:
-	ComputeChunkV2() {};
+	ComputeInstance() {};
 
-	~ComputeChunkV2();
+	~ComputeInstance();
 
-	ComputeChunkV2& operator=(ComputeChunkV2&& other) noexcept {
+	ComputeInstance& operator=(ComputeInstance&& other) noexcept {
 		if (this != &other) {
 			// Clean up existing resources
 			if (vbo) glDeleteBuffers(1, &vbo);
@@ -65,7 +65,7 @@ public:
 		return *this;
 	}
 
-	void generate_buffers();
+	void generate_buffers(int instance_id);
 	void render(glm::mat4 mvp, float current_frame);
 
 	GLuint vbo, vao, voxel_ssbo, indirect_command, instance_data_buffer, palette;
