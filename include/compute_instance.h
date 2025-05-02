@@ -5,9 +5,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "learnopengl/shader.h"
-#include "learnopengl/compute.h"
-
 #include <vector>
 
 #include "ogt_wrapper.h"
@@ -50,9 +47,6 @@ public:
 			voxel_ssbo = other.voxel_ssbo;
 			indirect_command = other.indirect_command;
 			instance_data_buffer = other.instance_data_buffer;
-			palette = other.palette;
-			shader = std::move(other.shader);
-			compute = std::move(other.compute);
 
 			// Leave the other object in a valid state
 			other.vbo = 0;
@@ -60,16 +54,19 @@ public:
 			other.voxel_ssbo = 0;
 			other.indirect_command = 0;
 			other.instance_data_buffer = 0;
-			other.palette = 0;
 		}
 		return *this;
 	}
 
-	void generate_buffers(int instance_id);
-	void render(glm::mat4 mvp, float current_frame);
+	ComputeInstance(const ComputeInstance&) = default;
+	ComputeInstance& operator=(const ComputeInstance&) = default;
 
-	GLuint vbo, vao, voxel_ssbo, indirect_command, instance_data_buffer, palette;
-	
-	Shader shader;
-	ComputeShader compute;
+	ComputeInstance(ComputeInstance&& other) noexcept {
+		*this = std::move(other);
+	}
+
+	void generate_buffers(const ogt_vox_model* model, glm::vec4 offset);
+	void render();
+
+	GLuint vbo, vao, voxel_ssbo, indirect_command, instance_data_buffer;
 };
