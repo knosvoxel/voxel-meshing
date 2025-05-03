@@ -63,7 +63,7 @@ void ComputeInstance::generate_buffers(const ogt_vox_model* model, glm::vec4 off
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, indirect_command);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, instance_data_buffer);
 
-    glDispatchCompute(size_x, size_y, size_z);
+    glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);
 
     glMemoryBarrier(
         GL_SHADER_STORAGE_BARRIER_BIT | 
