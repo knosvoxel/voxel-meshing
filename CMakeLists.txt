@@ -50,6 +50,11 @@ set(OGT_VOX_DIR "${LIB_DIR}/ogt_vox")
 add_subdirectory("${OGT_VOX_DIR}")
 target_link_libraries(${PROJECT_NAME} "ogt_vox")
 
+# stb_image
+set(STB_IMAGE_FOLDER "${LIB_DIR}/stb_image")
+add_subdirectory("${STB_IMAGE_FOLDER}")
+target_link_libraries(${PROJECT_NAME} "stb_image")
+
 # include folder
 target_include_directories(${PROJECT_NAME} PRIVATE "${INCL_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${RES_DIR}")
