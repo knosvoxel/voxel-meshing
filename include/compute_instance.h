@@ -6,11 +6,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
+#include <iostream>
 
 #include "ogt_wrapper.h"
 
 typedef struct InstanceData {
 	glm::vec4 instance_size;
+	glm::vec4 remapped_size;
 	glm::vec4 instance_position_offset;
 };
 
@@ -65,8 +67,11 @@ public:
 		*this = std::move(other);
 	}
 
-	void generate_buffers(const ogt_vox_model* model, glm::vec4 offset);
+	void prepare_model_data(const ogt_vox_model* model, glm::vec4 offset);
+	void generate_mesh();
+
 	void render();
 
-	GLuint vbo, vao, voxel_ssbo, indirect_command, instance_data_buffer;
+	GLuint vbo, vao, voxel_ssbo, remapped_ssbo, indirect_command, instance_data_buffer;
+	uint32_t size_x, size_y, size_z;
 };

@@ -4,23 +4,53 @@ ComputeInstance::~ComputeInstance()
 {
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &voxel_ssbo);
+    glDeleteBuffers(1, &remapped_ssbo);
     glDeleteBuffers(1, &indirect_command);
     glDeleteBuffers(1, &instance_data_buffer);
 }
 
-void ComputeInstance::generate_buffers(const ogt_vox_model* model, glm::vec4 offset)
+void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 offset)
 {
-    uint32_t size_x = model->size_x;
-    uint32_t size_y = model->size_y;
-    uint32_t size_z = model->size_z;
+    uint32_t model_size_x = model->size_x;
+    uint32_t model_size_y = model->size_y;
+    uint32_t model_size_z = model->size_z;
+
+    size_x = (model_size_x + 7) / 8 * 8;
+    size_y = (model_size_y + 7) / 8 * 8;
+    size_z = (model_size_z + 7) / 8 * 8;
 
     const uint8_t* voxel_data = model->voxel_data;
 
+    glCreateBuffers(1, &voxel_ssbo);
+    glCreateBuffers(1, &remapped_ssbo);
+
+    glNamedBufferStorage(voxel_ssbo, sizeof(uint8_t) * model_size_x * model_size_y * model_size_z, voxel_data, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
+    glNamedBufferStorage(remapped_ssbo, sizeof(uint8_t) * size_x * size_y * size_z, nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
+    glClearNamedBufferData(remapped_ssbo, GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr); // all values are initially 0. 0 = empty voxel
+
     InstanceData instance_data{};
-    instance_data.instance_size = glm::vec4(size_x, size_y, size_z, 0);
+    instance_data.instance_size = glm::vec4(model_size_x, model_size_y, model_size_z, 0);
+    instance_data.remapped_size = glm::vec4(size_x, size_y, size_z, 0);
     instance_data.instance_position_offset = offset;
 
+    glCreateBuffers(1, &instance_data_buffer);
+
+    glNamedBufferStorage(instance_data_buffer, sizeof(InstanceData), &instance_data, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, remapped_ssbo);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, instance_data_buffer);
+
+    glDispatchCompute(model_size_x, model_size_y, model_size_z);
+
+    glMemoryBarrier(
+        GL_SHADER_STORAGE_BARRIER_BIT
+    );
+
+    glDeleteBuffers(1, &voxel_ssbo);
+}
+
+void ComputeInstance::generate_mesh() {
     DrawArraysIndirectCommand indirect_data{};
     indirect_data.count = 0;
     indirect_data.instanceCount = 1;
@@ -29,16 +59,12 @@ void ComputeInstance::generate_buffers(const ogt_vox_model* model, glm::vec4 off
 
     glCreateVertexArrays(1, &vao);
 
-    glCreateBuffers(1, &voxel_ssbo);
     glCreateBuffers(1, &vbo);
     glCreateBuffers(1, &indirect_command);
-    glCreateBuffers(1, &instance_data_buffer);
 
-    glNamedBufferStorage(voxel_ssbo, sizeof(uint8_t) * size_x * size_y * size_z, voxel_data, GL_DYNAMIC_STORAGE_BIT);
     glNamedBufferStorage(vbo, sizeof(Vertex) * size_x * size_y * size_z * 36, nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
     glNamedBufferStorage(indirect_command, sizeof(DrawArraysIndirectCommand), &indirect_data,
-      GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
-    glNamedBufferStorage(instance_data_buffer, sizeof(InstanceData), &instance_data, GL_DYNAMIC_STORAGE_BIT |GL_MAP_READ_BIT);
+        GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
 
     // position attribute in the vertex shader
     glEnableVertexArrayAttrib(vao, 0);
@@ -58,7 +84,7 @@ void ComputeInstance::generate_buffers(const ogt_vox_model* model, glm::vec4 off
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
 
     //compute shader call
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, remapped_ssbo);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, indirect_command);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, instance_data_buffer);
@@ -66,11 +92,11 @@ void ComputeInstance::generate_buffers(const ogt_vox_model* model, glm::vec4 off
     glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);
 
     glMemoryBarrier(
-        GL_SHADER_STORAGE_BARRIER_BIT | 
+        GL_SHADER_STORAGE_BARRIER_BIT |
         GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT |
         GL_COMMAND_BARRIER_BIT
     );
-}
+};
 
 void ComputeInstance::render()
 {

@@ -2,6 +2,7 @@
 
 struct InstanceData{
     vec4 instance_size;
+    vec4 remapped_size;
     vec4 instance_position_offset;
 };
 
@@ -43,12 +44,12 @@ layout (binding = 3, std430) readonly buffer instance_data_buffer {
 
 void main() {
     vec3 voxel_pos = gl_GlobalInvocationID;
-    vec3 model_size = instance_data.instance_size.xyz;
+    vec3 model_size = instance_data.remapped_size.xyz;
     uint voxel_index = uint(voxel_pos.x + (voxel_pos.y * model_size.x) + (voxel_pos.z * model_size.x * model_size.y));
 
     // retrieve color index from packed voxel data (4 voxels per uint) 
     VoxelData voxel_data = voxels[voxel_index / 4];
-    uint shift = (8 * (voxel_index % 4));
+    uint shift = 8 * (voxel_index % 4);
     uint col_idx = (voxel_data.four_voxels >> shift) & 255;
     
     // voxel empty = pass

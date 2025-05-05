@@ -8,11 +8,10 @@ void ComputeScene::load(const char* path)
 {
 	shader = Shader("../shaders/compute/compute_instance.vert", "../shaders/compute/compute_instance.frag");
 
+	remap_to_8s_compute = ComputeShader("../shaders/compute/remap_to_8s.comp");
 	compute = ComputeShader("../shaders/compute/compute_instance.comp");
 
 	const ogt_vox_scene* vox_scene = load_vox_scene(path);
-
-	compute.use();
 
 	// load instances
 	for (size_t i = 0; i < vox_scene->num_instances; i++)
@@ -24,9 +23,14 @@ void ComputeScene::load(const char* path)
 
 		glm::vec4 instance_offset(instance_transform.m30, instance_transform.m31, instance_transform.m32, 0);
 
+		remap_to_8s_compute.use();
+
 		// directly create instance within the vector container w/o a temporary value
 		instances.emplace_back();
-		instances.back().generate_buffers(curr_model, instance_offset);
+		instances.back().prepare_model_data(curr_model, instance_offset);
+
+		compute.use();
+		instances.back().generate_mesh();
 	}
 
 	// load palette into texture
