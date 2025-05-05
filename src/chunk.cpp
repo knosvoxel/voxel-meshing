@@ -21,7 +21,7 @@ void Chunk::generate_buffers()
 
     std::vector<Vertex> buffer;
 
-    const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/90mins.vox");
+    const ogt_vox_scene* voxScene = load_vox_scene("../res/vox/32x32x32.vox");
 
     for (uint32_t inst_index = 0; inst_index < voxScene->num_instances; inst_index++) {
 

@@ -44,6 +44,7 @@ layout (binding = 3, std430) readonly buffer instance_data_buffer {
 
 void main() {
     vec3 voxel_pos = gl_GlobalInvocationID;
+    vec3 offset_size = instance_data.instance_size.xyz;
     vec3 model_size = instance_data.remapped_size.xyz;
     uint voxel_index = uint(voxel_pos.x + (voxel_pos.y * model_size.x) + (voxel_pos.z * model_size.x * model_size.y));
 
@@ -57,7 +58,7 @@ void main() {
 
     // vox format coordinates to OpenGL coordinates
     vec3 voxel_pos_flipped = vec3(voxel_pos.y, voxel_pos.z, voxel_pos.x);
-    voxel_pos_flipped += instance_data.instance_position_offset.yzx - vec3(floor(model_size.y / 2.0), floor(model_size.z / 2.0), floor(model_size.x / 2.0));
+    voxel_pos_flipped += instance_data.instance_position_offset.yzx - vec3(floor(offset_size.y / 2.0), floor(offset_size.z / 2.0), floor(offset_size.x / 2.0));
 
     // calculate amount of vertices that are visible
     uint vertices_to_add = 0;

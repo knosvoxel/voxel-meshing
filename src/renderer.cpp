@@ -187,7 +187,8 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-    compute_scene.load("../res/vox/32x32x32.vox");
+    compute_scene.load("../res/vox/90mins.vox");
+    //chunk.generate_buffers();
     quad.generate_buffers();
 
     // uncomment this call to draw in wireframe polygons.
@@ -225,6 +226,7 @@ void Renderer::loop() {
 
         // render main object
         compute_scene.render(mvp, currentFrame);
+        //chunk.render(mvp);
 
         // render screen quad
         float aspect_ratio = window_size.y / window_size.x;

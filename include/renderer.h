@@ -52,6 +52,7 @@ public:
 	
 	Camera camera;
 	ComputeScene compute_scene;
+	Chunk chunk;
 
 	Line coord_x, coord_y, coord_z;
 	ScreenQuad quad;

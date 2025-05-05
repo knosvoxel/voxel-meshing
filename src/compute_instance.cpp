@@ -62,7 +62,8 @@ void ComputeInstance::generate_mesh() {
     glCreateBuffers(1, &vbo);
     glCreateBuffers(1, &indirect_command);
 
-    glNamedBufferStorage(vbo, sizeof(Vertex) * size_x * size_y * size_z * 36, nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+    glNamedBufferStorage(vbo, sizeof(Vertex) * size_x * size_y * size_z * 2 // * 32: Left out but technically required
+        , nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
     glNamedBufferStorage(indirect_command, sizeof(DrawArraysIndirectCommand), &indirect_data,
         GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
 
