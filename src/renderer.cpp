@@ -209,7 +209,8 @@ void Renderer::loop() {
         processInput();
 
         // render
-        glClearColor(0.149f, 0.149f, 0.149f, 1.0f); // color to use glClear with
+        glClearColor(0.20f, 0.20f, 0.20f, 1.0f); // color to use glClear with
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clears the color buffer "replacing" all pixels with the selected color
 
         // camera properties
