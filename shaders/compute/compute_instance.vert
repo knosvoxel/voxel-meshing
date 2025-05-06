@@ -1,17 +1,16 @@
 #version 460 core
 layout (location = 0) in vec3 aPos;
-layout (location = 1) in uint color_index;
-layout (location = 2) in vec3 aNormal;
+layout (location = 1) in uint packed_data; // normal & color index
 
 uniform mat4 mvp;
 	
 flat out uint color_idx;
-out vec3 Normal;
+flat out uint normal_idx;
 	
 void main()
 {
-    color_idx = color_index;
-	Normal = aNormal;
+    color_idx = packed_data & 255;
+	normal_idx = (packed_data >> 8) & 7; // loweset 3 bits as only values from 0 - 5 are used
 
     gl_Position = mvp * vec4(aPos, 1.0);
 //	gl_PointSize = 5;

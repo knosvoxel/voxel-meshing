@@ -18,9 +18,7 @@ typedef struct InstanceData {
 
 typedef struct Vertex {
 	glm::vec3 pos;
-	uint32_t color_index;
-	glm::vec3 normal;
-	uint32_t padding; // needed for std430 alignment to 32 bytes
+	uint32_t packed_data; // Bytes | 0: 00000000 | 1: 00000000 | 2: normal index |3: color index |
 };
 
 typedef struct DrawArraysIndirectCommand {

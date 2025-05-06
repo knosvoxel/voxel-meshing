@@ -72,15 +72,10 @@ void ComputeInstance::generate_mesh() {
     glVertexArrayAttribBinding(vao, 0, 0);
     glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
 
-    // color index
+    // packed normal & color index data
     glEnableVertexArrayAttrib(vao, 1);
     glVertexArrayAttribBinding(vao, 1, 0);
-    glVertexArrayAttribFormat(vao, 1, 1, GL_UNSIGNED_INT, GL_FALSE, 3 * sizeof(GLfloat));
-
-    // normal
-    glEnableVertexArrayAttrib(vao, 2);
-    glVertexArrayAttribBinding(vao, 2, 0);
-    glVertexArrayAttribFormat(vao, 2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat) + sizeof(uint32_t));
+    glVertexArrayAttribIFormat(vao, 1, 1, GL_UNSIGNED_INT, 3 * sizeof(GLfloat));
 
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
 
