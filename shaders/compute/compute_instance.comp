@@ -40,7 +40,7 @@ layout (binding = 3, std430) readonly buffer instance_data_buffer {
     InstanceData instance_data;
 };
 
-const vec3 normalDirections[6] = vec3[6](
+const vec3 normal_directions[6] = vec3[6](
     vec3(-1.0,  0.0,  0.0),  // 0
     vec3( 1.0,  0.0,  0.0),  // 1
     vec3( 0.0,  0.0, -1.0),  // 2
@@ -48,6 +48,8 @@ const vec3 normalDirections[6] = vec3[6](
     vec3( 0.0, -1.0,  0.0),  // 4
     vec3( 0.0,  1.0,  0.0)   // 5
 );
+
+shared uint occupied_voxels[16];
 
 void main() {
     vec3 voxel_pos = gl_GlobalInvocationID;
@@ -59,9 +61,32 @@ void main() {
     VoxelData voxel_data = voxels[voxel_index / 4];
     uint shift = 8 * (voxel_index % 4);
     uint col_idx = (voxel_data.four_voxels >> shift) & 255;
-    
+
+    // initialize occupied_voxels array to 0. Only set occupied voxels to 1 (early return for empty ones)
+    if (gl_LocalInvocationIndex == 0){
+        for (int i = 0; i < 16; ++i)
+            occupied_voxels[i] = 0;
+    }
+
+    // wait for all invocations to receive the initialized occupied_voxels array
+    barrier();
+
+    uint local_index = gl_LocalInvocationIndex;
+    uint correct_occupy_uint = local_index / 32;
+    uint bit_in_uint = local_index % 32;
+
     // voxel empty = pass
     if(col_idx == 0) return;
+
+    // 1 if index is occupied
+    atomicOr(occupied_voxels[correct_occupy_uint], 1 << bit_in_uint);
+
+    barrier();
+
+    // workgroup visualization debug
+    //    col_idx = (gl_WorkGroupID.x 
+    //                + gl_WorkGroupID.y * 3
+    //                + gl_WorkGroupID.z * 5) % 255 + 1;
 
     // vox format coordinates to OpenGL coordinates
     vec3 voxel_pos_flipped = vec3(voxel_pos.y, voxel_pos.z, voxel_pos.x);
