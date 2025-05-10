@@ -9,6 +9,7 @@ ComputeInstance::~ComputeInstance()
     glDeleteBuffers(1, &instance_data_buffer);
 }
 
+// Called first: remaps voxel data to multiples of 8
 void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 offset)
 {
     uint32_t model_size_x = model->size_x;
@@ -24,8 +25,8 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
     glCreateBuffers(1, &voxel_ssbo);
     glCreateBuffers(1, &remapped_ssbo);
 
-    glNamedBufferStorage(voxel_ssbo, sizeof(uint8_t) * model_size_x * model_size_y * model_size_z, voxel_data, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
-    glNamedBufferStorage(remapped_ssbo, sizeof(uint8_t) * size_x * size_y * size_z, nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
+    glNamedBufferStorage(voxel_ssbo, sizeof(uint8_t) * model_size_x * model_size_y * model_size_z, voxel_data, GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(remapped_ssbo, sizeof(uint8_t) * size_x * size_y * size_z, nullptr, GL_DYNAMIC_STORAGE_BIT);
     glClearNamedBufferData(remapped_ssbo, GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr); // all values are initially 0. 0 = empty voxel
 
     InstanceData instance_data{};
@@ -35,7 +36,7 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
 
     glCreateBuffers(1, &instance_data_buffer);
 
-    glNamedBufferStorage(instance_data_buffer, sizeof(InstanceData), &instance_data, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
+    glNamedBufferStorage(instance_data_buffer, sizeof(InstanceData), &instance_data, GL_DYNAMIC_STORAGE_BIT);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, remapped_ssbo);
@@ -50,6 +51,39 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
     glDeleteBuffers(1, &voxel_ssbo);
 }
 
+// Called second: Calculates required VBO size
+void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model)
+{
+    glCreateBuffers(1, &vbo_size_buffer);
+
+    glNamedBufferStorage(vbo_size_buffer, sizeof(GLuint), nullptr, GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    glClearNamedBufferData(vbo_size_buffer, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, remapped_ssbo);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo_size_buffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, instance_data_buffer);
+
+    glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);
+
+    glMemoryBarrier(
+        GL_SHADER_STORAGE_BARRIER_BIT
+    );
+
+    void* vbo_size_ptr = glMapNamedBufferRange(vbo_size_buffer, 0, sizeof(GLuint),
+        GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+
+    if (vbo_size_ptr == nullptr) {
+        printf("Failed to map vbo_size_buffer.\n");
+        return;
+    }
+
+    vbo_size = *(GLuint*)vbo_size_ptr;
+
+    glUnmapNamedBuffer(vbo_size_buffer);
+    glDeleteBuffers(1, &vbo_size_buffer);
+}
+
+// Called third: fills VBO with data
 void ComputeInstance::generate_mesh() {
     DrawArraysIndirectCommand indirect_data{};
     indirect_data.count = 0;
@@ -62,10 +96,10 @@ void ComputeInstance::generate_mesh() {
     glCreateBuffers(1, &vbo);
     glCreateBuffers(1, &indirect_command);
 
-    glNamedBufferStorage(vbo, sizeof(Vertex) * size_x * size_y * size_z * 2 // * 32: Left out but technically required
-        , nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+    glNamedBufferStorage(vbo, sizeof(Vertex) * vbo_size // * 32: Left out but technically required
+        , nullptr, GL_DYNAMIC_STORAGE_BIT);
     glNamedBufferStorage(indirect_command, sizeof(DrawArraysIndirectCommand), &indirect_data,
-        GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+        GL_DYNAMIC_STORAGE_BIT);
 
     // position attribute in the vertex shader
     glEnableVertexArrayAttrib(vao, 0);

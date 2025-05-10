@@ -66,10 +66,11 @@ public:
 	}
 
 	void prepare_model_data(const ogt_vox_model* model, glm::vec4 offset);
+	void calculate_buffer_size(const ogt_vox_model* model);
 	void generate_mesh();
 
 	void render();
 
-	GLuint vbo, vao, voxel_ssbo, remapped_ssbo, indirect_command, instance_data_buffer;
-	uint32_t size_x, size_y, size_z;
+	GLuint vbo, vao, voxel_ssbo, remapped_ssbo, indirect_command, instance_data_buffer, vbo_size_buffer;
+	uint32_t size_x, size_y, size_z, vbo_size;
 };

@@ -40,6 +40,5 @@ public:
 	GLuint palette;
 
 	Shader shader;
-	ComputeShader remap_to_8s_compute;
-	ComputeShader compute;
+	ComputeShader remap_to_8s_compute, buffer_size_compute, compute;
 };

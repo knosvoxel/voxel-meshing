@@ -90,6 +90,13 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
     }
 }
 
+void GLAPIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+    const GLchar* message, const void* userParam)
+{
+    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+        (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""), type, severity, message);
+}
+
 // Renderer functions
 // -------------------------------------------
 void Renderer::imgui_render() {
@@ -153,12 +160,13 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     glEnable(GL_FRONT); // Cull front faces
     glFrontFace(GL_CW);
 
+    //glEnable(GL_DEBUG_OUTPUT);
+    //glDebugMessageCallback(message_callback, 0);
+
     // overdraw debug visuals
     //glEnable(GL_BLEND);
     //glDepthFunc(GL_ALWAYS);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    //glEnable(GL_PROGRAM_POINT_SIZE);
 
     // Setup Dear ImGui context
     // -------------------------------------------
@@ -187,7 +195,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-    compute_scene.load("../res/vox/45mins.vox");
+    compute_scene.load("../res/vox/90mins.vox");
     //chunk.generate_buffers();
     quad.generate_buffers();
 

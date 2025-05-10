@@ -83,6 +83,8 @@ void main() {
 
     barrier();
 
+//    col_idx = correct_occupy_uint + 1 + gl_WorkGroupID.x % 2;
+//
     // workgroup visualization debug
     //    col_idx = (gl_WorkGroupID.x 
     //                + gl_WorkGroupID.y * 3

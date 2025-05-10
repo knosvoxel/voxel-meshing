@@ -9,6 +9,7 @@ void ComputeScene::load(const char* path)
 	shader = Shader("../shaders/compute/compute_instance.vert", "../shaders/compute/compute_instance.frag");
 
 	remap_to_8s_compute = ComputeShader("../shaders/compute/remap_to_8s.comp");
+	buffer_size_compute = ComputeShader("../shaders/compute/calculate_buffer_size.comp");
 	compute = ComputeShader("../shaders/compute/compute_instance.comp");
 
 	const ogt_vox_scene* vox_scene = load_vox_scene(path);
@@ -28,6 +29,10 @@ void ComputeScene::load(const char* path)
 		// directly create instance within the vector container w/o a temporary value
 		instances.emplace_back();
 		instances.back().prepare_model_data(curr_model, instance_offset);
+
+		buffer_size_compute.use();
+
+		instances.back().calculate_buffer_size(curr_model);
 
 		compute.use();
 		instances.back().generate_mesh();
