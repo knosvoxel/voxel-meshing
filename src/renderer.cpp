@@ -195,9 +195,9 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-    compute_scene.load("../res/vox/90mins.vox");
+    compute_scene.load("../res/vox/greedy.vox");
     //chunk.generate_buffers();
-    quad.generate_buffers();
+    //quad.generate_buffers();
 
     // uncomment this call to draw in wireframe polygons.
     if (enable_wireframe) {
@@ -238,20 +238,20 @@ void Renderer::loop() {
         //chunk.render(mvp);
 
         // render screen quad
-        float aspect_ratio = window_size.y / window_size.x;
+        //float aspect_ratio = window_size.y / window_size.x;
 
-        glm::vec2 quad_size = glm::vec2(0.25f);
-        glm::vec2 quad_scale = glm::vec2(quad_size.x, quad_size.y / aspect_ratio);
+        //glm::vec2 quad_size = glm::vec2(0.25f);
+        //glm::vec2 quad_scale = glm::vec2(quad_size.x, quad_size.y / aspect_ratio);
 
-        glm::vec2 half_size = quad_scale * 0.5f;
-        glm::vec2 quad_pos = glm::vec2(1.0f - half_size.x, 1.0f - half_size.y);
+        //glm::vec2 half_size = quad_scale * 0.5f;
+        //glm::vec2 quad_pos = glm::vec2(1.0f - half_size.x, 1.0f - half_size.y);
 
-        glm::mat4 quad_mat = glm::mat4(1.0f);
-        quad_mat = glm::translate(quad_mat, glm::vec3(quad_pos, 0.0f));
-        quad_mat = glm::scale(quad_mat, glm::vec3(quad_scale, 1.0f));
+        //glm::mat4 quad_mat = glm::mat4(1.0f);
+        //quad_mat = glm::translate(quad_mat, glm::vec3(quad_pos, 0.0f));
+        //quad_mat = glm::scale(quad_mat, glm::vec3(quad_scale, 1.0f));
 
 
-        quad.render(quad_mat, currentFrame);
+        //quad.render(quad_mat, currentFrame);
 
         // render imgui UI
         imgui_render();

@@ -10,7 +10,7 @@ void ComputeScene::load(const char* path)
 
 	remap_to_8s_compute = ComputeShader("../shaders/compute/remap_to_8s.comp");
 	buffer_size_compute = ComputeShader("../shaders/compute/calculate_buffer_size.comp");
-	compute = ComputeShader("../shaders/compute/compute_instance.comp");
+	compute = ComputeShader("../shaders/compute/compute_instance_greedy_8x8.comp");
 
 	const ogt_vox_scene* vox_scene = load_vox_scene(path);
 

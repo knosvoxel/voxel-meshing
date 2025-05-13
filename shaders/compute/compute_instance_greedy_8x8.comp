@@ -49,6 +49,40 @@ const vec3 normal_directions[6] = vec3[6](
     vec3( 0.0,  1.0,  0.0)   // 5
 );
 
+// 8 * 8 voxels on a face / 8 face layers per side / divided by 32 (bit to byte)
+// filled from small x/y/z to large x/y/z
+// 0 filled neighbour in negative direction ("Don't place a face for this voxel here")
+// 1 filled neighbour in positive direction ("Place a face for this voxel here")
+
+/////////////////////
+// Example:        //
+/////////////////////
+// 1 1 1 0 0 1 1 1 //
+// 1 1 1 1 1 1 1 1 //
+// 0 0 1 1 1 1 0 0 //
+// 1 1 1 1 1 0 0 0 //
+// 1 1 0 0 0 0 0 0 //
+// 1 1 1 1 0 0 0 1 //
+// 0 0 0 1 1 1 0 0 //
+// 1 1 1 0 0 0 0 0 //
+/////////////////////
+
+shared uint neighbours_x0[16];
+shared uint neighbours_x1[16];
+shared uint neighbours_y0[16];
+shared uint neighbours_y1[16];
+shared uint neighbours_z0[16];
+shared uint neighbours_z1[16];
+
+// faces with completed processing
+shared uint done_x0[16];
+shared uint done_x1[16];
+shared uint done_y0[16];
+shared uint done_y1[16];
+shared uint done_z0[16];
+shared uint done_z1[16];
+
+
 void main() {
     vec3 voxel_pos = gl_GlobalInvocationID;
     vec3 offset_size = instance_data.instance_size.xyz;
@@ -60,8 +94,27 @@ void main() {
     uint shift = 8 * (voxel_index % 4);
     uint col_idx = (voxel_data.four_voxels >> shift) & 255;
 
-    // voxel empty = pass
-    if(col_idx == 0) return;
+    // initialize occupied_voxels array to 0. Only set occupied voxels to 1 (early return for empty ones)
+    if (gl_LocalInvocationIndex == 0){
+        for (int i = 0; i < 16; ++i){
+            neighbours_x0[i] = 0;
+            neighbours_x1[i] = 0;
+            neighbours_y0[i] = 0;
+            neighbours_y1[i] = 0;
+            neighbours_z0[i] = 0;
+            neighbours_z1[i] = 0;
+
+            done_x0[i] = 0;
+            done_x1[i] = 0;
+            done_y0[i] = 0;
+            done_y1[i] = 0;
+            done_z0[i] = 0;
+            done_z1[i] = 0;
+        }
+    }
+
+    // wait for all invocations to receive the initialized occupied_voxels array
+    barrier();
 
 //    col_idx = correct_occupy_uint + 1 + gl_WorkGroupID.x % 2;
 //
@@ -143,19 +196,63 @@ void main() {
         add_y1 = (neigh_col == 0);
     }
 
-    if (add_x0) vertices_to_add += 6;
-    if (add_x1) vertices_to_add += 6;
-    if (add_z0) vertices_to_add += 6;
-    if (add_z1) vertices_to_add += 6;
-    if (add_y0) vertices_to_add += 6;
-    if (add_y1) vertices_to_add += 6;
+    uint local_index = gl_LocalInvocationIndex;
+    uint correct_mask = local_index / 32;
+    uint correct_mask_bit = local_index % 32;
 
+    // voxel empty = pass
+    if(col_idx == 0) return;
+
+    barrier();
+
+    if (add_x0) {
+        vertices_to_add += 6; // TODO: Eventually remove
+        // 0 if neighbouring index is occupied
+        atomicOr(neighbours_x0[correct_mask], 1 << correct_mask_bit);
+    }
+    if (add_x1) {
+        vertices_to_add += 6; // TODO: Eventually remove
+        // 0 if neighbouring index is occupied
+        atomicOr(neighbours_x1[correct_mask], 1 << correct_mask_bit);
+    }
+    if (add_z0) {
+        vertices_to_add += 6; // TODO: Eventually remove
+        // 0 if neighbouring index is occupied
+        atomicOr(neighbours_z0[correct_mask], 1 << correct_mask_bit);
+    }
+    if (add_z1) {
+        vertices_to_add += 6; // TODO: Eventually remove
+        // 0 if neighbouring index is occupied
+        atomicOr(neighbours_z1[correct_mask], 1 << correct_mask_bit);
+    }
+    if (add_y0) {
+        vertices_to_add += 6; // TODO: Eventually remove
+        // 0 if neighbouring index is occupied
+        atomicOr(neighbours_y0[correct_mask], 1 << correct_mask_bit);
+    }
+    if (add_y1) {
+        vertices_to_add += 6; // TODO: Eventually remove
+        // 0 if neighbouring index is occupied
+        atomicOr(neighbours_y1[correct_mask], 1 << correct_mask_bit);
+    }
+
+    // TODO: eventually remove
     uint local_base_idx = atomicAdd(indirect_command.count, vertices_to_add);
 
+    // step down in face size
+    for (int i = 8; i > 0; i /= 2){
+        // if face bit isn't done yet
+        if (!bool(done_x0[correct_mask] >> correct_mask_bit)){
+            // check for face size
+        }
+    }
+
+    // TODO: eventually remove
     // x -> z -> y
     // add each face based on if there's a neighbouring voxel or not
     if (add_x0){
         uint normal_index = 0;
+        col_idx = 0;
         uint x0_packed_data = (col_idx & 255) | (normal_index << 8); // color index in last byte, normal index 2nd to last of uint
 
         Vertex v1, v2, v3, v4, v5, v6;
@@ -185,6 +282,7 @@ void main() {
 
     if (add_x1){
         uint normal_index = 1;
+        col_idx = 1;
         uint x1_packed_data = (col_idx & 255) | (normal_index << 8);
 
         Vertex v7, v8, v9, v10, v11, v12;
@@ -214,6 +312,7 @@ void main() {
 
     if (add_z0){
         uint normal_index = 2;
+        col_idx = 4;
         uint x2_packed_data = (col_idx & 255) | (normal_index << 8);
 
         Vertex v13, v14, v15, v16, v17, v18;
@@ -243,6 +342,7 @@ void main() {
 
     if (add_z1){
         uint normal_index = 3;
+        col_idx = 5;
         uint x3_packed_data = (col_idx & 255) | (normal_index << 8);
 
         Vertex v19, v20, v21, v22, v23, v24;
@@ -272,6 +372,7 @@ void main() {
     
     if (add_y0){
         uint normal_index = 4;
+        col_idx = 2;
         uint x4_packed_data = (col_idx & 255) | (normal_index << 8);
 
         Vertex v25, v26, v27, v28, v29, v30;
@@ -301,6 +402,7 @@ void main() {
     
     if (add_y1){
         uint normal_index = 5;
+        col_idx = 3;
         uint x5_packed_data = (col_idx & 255) | (normal_index << 8);
 
         Vertex v31, v32, v33, v34, v35, v36;
