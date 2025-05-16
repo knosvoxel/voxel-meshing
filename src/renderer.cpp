@@ -158,7 +158,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
    
     glEnable(GL_CULL_FACE); // Enable culling
     glEnable(GL_FRONT); // Cull front faces
-    glFrontFace(GL_CW);
+    glFrontFace(GL_CCW); // TODO: change back to CW
 
     //glEnable(GL_DEBUG_OUTPUT);
     //glDebugMessageCallback(message_callback, 0);
