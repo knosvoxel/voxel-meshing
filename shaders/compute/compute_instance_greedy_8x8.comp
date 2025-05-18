@@ -59,11 +59,6 @@ shared uint processing_buffer_y1[8];
 shared uint processing_buffer_z0[8];
 shared uint processing_buffer_z1[8];
 
-// lowest voxel positions for each layer in each direction
-shared uint lowest_voxel_x[8];
-shared uint lowest_voxel_y[8];
-shared uint lowest_voxel_z[8];
-
 void main() {
     vec3 voxel_pos = gl_GlobalInvocationID;
     vec3 local_pos = gl_LocalInvocationID.yzx;
@@ -87,10 +82,6 @@ void main() {
             processing_buffer_y1[i] = 0;
             processing_buffer_z0[i] = 0;
             processing_buffer_z1[i] = 0;
-
-            lowest_voxel_x[i] = 0;
-            lowest_voxel_y[i] = 0;
-            lowest_voxel_z[i] = 0;
         }
     }
 
@@ -189,7 +180,6 @@ void main() {
 
     //uint local_z_index = TODO;
 
-
     // 0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0
     // ... | 32768 16384 8192 4096 2048 1024 512 256 | 128 64 32 16 8 4 2 1
     // step down in face size
@@ -244,10 +234,6 @@ void main() {
                     }
                 }
 
-                if (int(local_pos.x) % i == 0 && int(local_pos.z) % i == 0){
-                    atomicMin(lowest_voxel_y[int(local_pos.y)], gl_LocalInvocationIndex); // TODO: still not working correctly
-                }
-
                 barrier();
                 // processing bits from left to right (uint layout): | 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0 | done data |
                 // up to layer 2, single faces are handled differently
@@ -259,14 +245,14 @@ void main() {
                 int processing_bit_z0 = -1;
                 int processing_bit_z1 = -1;
 
-//                if(x0_in_area)
-                processing_bit_x0 = (8 / i) * int((local_pos.x - 1.0) / i) + int(local_pos.z) / i;
-//                if(x1_in_area)
-                processing_bit_x1 = (8 / i) * int((local_pos.x + 1.0) / i) + int(local_pos.z) / i;
-//                if(z0_in_area)
-                processing_bit_z0 = (8 / i) * int((local_pos.x) / i) + int(local_pos.z - 1.0) / i;
-//                if(z1_in_area)
-                processing_bit_z1 = (8 / i) * int((local_pos.x) / i) + int(local_pos.z + 1.0) / i;
+                if(x0_in_area)
+                    processing_bit_x0 = (8 / i) * int((local_pos.x - 1.0) / i) + int(local_pos.z) / i;
+                if(x1_in_area)
+                    processing_bit_x1 = (8 / i) * int((local_pos.x + 1.0) / i) + int(local_pos.z) / i;
+                if(z0_in_area)
+                    processing_bit_z0 = (8 / i) * int((local_pos.x) / i) + int(local_pos.z - 1.0) / i;
+                if(z1_in_area)
+                    processing_bit_z1 = (8 / i) * int((local_pos.x) / i) + int(local_pos.z + 1.0) / i;
 
                 if (
                     (correct_processing_bit == processing_bit_x0 && col_idx_x0 != col_idx) ||
@@ -291,7 +277,7 @@ void main() {
                 // if processing mask bit is still 0 this face can be created!
                 if ((processing_bit_state & 1) == 0)
                 {
-                    if (gl_LocalInvocationIndex == lowest_voxel_y[int(local_pos.y)]){
+                    if (int(local_pos.x) % i == 0 && int(local_pos.z) % i == 0){
                         uint local_base_idx = atomicAdd(indirect_command.count, 6);
                                         
                         uint normal_index = 5; // todo: change back to 4
@@ -318,22 +304,24 @@ void main() {
                         vertices[local_base_idx + 3] = v3;
                         vertices[local_base_idx + 4] = v4;
                         vertices[local_base_idx + 5] = v5;
-                        
-                        continue;
                     }
 
-                    atomicOr(processing_buffer_y0[correct_y_mask], 1 << (correct_y_mask_bit / 4));
+                    atomicOr(processing_buffer_y0[correct_y_mask], 1 << (correct_y_mask_bit / 4)); // TODO: probably setting this to 1 in some wrong cases
 
                 }
+
+                continue; // Required?
 
                 barrier();
 
             }
 
             else{
-                if (col_idx_y0 != 0 || col_idx == 0)
-                    continue;
 
+// TODO: Is this step required?
+//                if (col_idx_y0 != 0 || col_idx == 0)
+//                    continue;
+                if (col_idx == 0) return;
                 // single face at position
 
                 uint local_base_idx = atomicAdd(indirect_command.count, 6);
