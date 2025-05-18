@@ -194,7 +194,7 @@ void main() {
     // ... | 32768 16384 8192 4096 2048 1024 512 256 | 128 64 32 16 8 4 2 1
     // step down in face size
     // i: used to calculate correct bit positions
-    for (int i = 8; i > 0; i /= 2){ // 1 | 4 | 16 work blocks
+    for (int i = 1; i > 0; i /= 2){ // 1 | 4 | 16 work blocks
 
 //      ...............
         //x
@@ -245,7 +245,7 @@ void main() {
                 }
 
                 if (int(local_pos.x) % i == 0 && int(local_pos.z) % i == 0){
-                    atomicMin(lowest_voxel_y[int(local_pos.y)], gl_LocalInvocationIndex); // TODO: still not working correctly
+                    atomicMin(lowest_voxel_y[int(local_pos.y)], gl_LocalInvocationIndex); // TODO: This index is mapped to the wrong coordinate sytem, fix it!
                 }
 
                 barrier();
@@ -334,6 +334,7 @@ void main() {
                 if (col_idx_y0 != 0 || col_idx == 0)
                     continue;
 
+                col_idx = correct_y_mask + 1;
                 // single face at position
 
                 uint local_base_idx = atomicAdd(indirect_command.count, 6);
@@ -373,223 +374,4 @@ void main() {
 
         // face y0 end //
     }
-
-
-
-//    if (add_x0) {
-//        vertices_to_add += 6; // TODO: Eventually remove
-//        // 0 if neighbouring index is occupied
-////        atomicOr(neighbours_x0[correct_mask], 1 << correct_mask_bit);
-//    }
-//    if (add_x1) {
-//        vertices_to_add += 6; // TODO: Eventually remove
-//        // 0 if neighbouring index is occupied
-////        atomicOr(neighbours_x1[correct_mask], 1 << correct_mask_bit);
-//    }
-//    if (add_z0) {
-//        vertices_to_add += 6; // TODO: Eventually remove
-//        // 0 if neighbouring index is occupied
-////        atomicOr(neighbours_z0[correct_mask], 1 << correct_mask_bit);
-//    }
-//    if (add_z1) {
-//        vertices_to_add += 6; // TODO: Eventually remove
-//        // 0 if neighbouring index is occupied
-////        atomicOr(neighbours_z1[correct_mask], 1 << correct_mask_bit);
-//    }
-//    if (add_y0) {
-//        vertices_to_add += 6; // TODO: Eventually remove
-//        // 0 if neighbouring index is occupied
-////        atomicOr(neighbours_y0[correct_mask], 1 << correct_mask_bit);
-//    }
-//    if (add_y1) {
-//        vertices_to_add += 6; // TODO: Eventually remove
-//        // 0 if neighbouring index is occupied
-////        atomicOr(neighbours_y1[correct_mask], 1 << correct_mask_bit);
-//    }
-
-//    // TODO: eventually remove
-//    uint local_base_idx = atomicAdd(indirect_command.count, vertices_to_add);
-
-    // TODO: eventually remove
-    // x -> z -> y
-    // add each face based on if there's a neighbouring voxel or not
-//    if (add_x0){
-//        uint normal_index = 0;
-//        col_idx = 0;
-//        uint x0_packed_data = (col_idx & 255) | (normal_index << 8); // color index in last byte, normal index 2nd to last of uint
-//
-//        Vertex v1, v2, v3, v4, v5, v6;
-//        v1.position = voxel_pos_translated + vec3(0.0, 1.0, 1.0); 
-//        v1.packed_data = x0_packed_data;
-//        v2.position = voxel_pos_translated;
-//        v2.packed_data = x0_packed_data;
-//        v3.position = voxel_pos_translated + vec3(0.0, 1.0, 0.0);
-//        v3.packed_data = x0_packed_data;
-//
-//        v4.position = voxel_pos_translated;
-//        v4.packed_data = x0_packed_data;
-//        v5.position = voxel_pos_translated + vec3(0.0, 1.0, 1.0); 
-//        v5.packed_data = x0_packed_data;
-//        v6.position = voxel_pos_translated + vec3(0.0, 0.0, 1.0);
-//        v6.packed_data = x0_packed_data;
-//
-//        vertices[local_base_idx] = v1;
-//        vertices[local_base_idx + 1] = v2;
-//        vertices[local_base_idx + 2] = v3;
-//        vertices[local_base_idx + 3] = v4;
-//        vertices[local_base_idx + 4] = v5;
-//        vertices[local_base_idx + 5] = v6;
-//
-//        local_base_idx += 6;
-//    }
-//
-//    if (add_x1){
-//        uint normal_index = 1;
-//        col_idx = 1;
-//        uint x1_packed_data = (col_idx & 255) | (normal_index << 8);
-//
-//        Vertex v7, v8, v9, v10, v11, v12;
-//        v7.position = voxel_pos_translated + vec3(1.0, 1.0, 1.0);
-//        v7.packed_data = x1_packed_data;
-//        v8.position = voxel_pos_translated + vec3(1.0, 1.0, 0.0);
-//        v8.packed_data = x1_packed_data;
-//        v9.position = voxel_pos_translated + vec3(1.0, 0.0, 0.0);
-//        v9.packed_data = x1_packed_data;
-//
-//        v10.position = voxel_pos_translated + vec3(1.0, 0.0, 0.0);
-//        v10.packed_data = x1_packed_data;
-//        v11.position = voxel_pos_translated + vec3(1.0, 0.0, 1.0);
-//        v11.packed_data = x1_packed_data;
-//        v12.position = voxel_pos_translated + vec3(1.0, 1.0, 1.0);
-//        v12.packed_data = x1_packed_data;
-//        
-//        vertices[local_base_idx] = v7;
-//        vertices[local_base_idx + 1] = v8;
-//        vertices[local_base_idx + 2] = v9;
-//        vertices[local_base_idx + 3] = v10;
-//        vertices[local_base_idx + 4] = v11;
-//        vertices[local_base_idx + 5] = v12;
-//
-//        local_base_idx += 6;
-//    }
-//
-//    if (add_z0){
-//        uint normal_index = 2;
-//        col_idx = 4;
-//        uint x2_packed_data = (col_idx & 255) | (normal_index << 8);
-//
-//        Vertex v13, v14, v15, v16, v17, v18;
-//        v13.position = voxel_pos_translated + vec3(0.0, 0.0, 0.0);
-//        v13.packed_data = x2_packed_data;
-//        v14.position = voxel_pos_translated + vec3(1.0, 0.0, 0.0);
-//        v14.packed_data = x2_packed_data;
-//        v15.position = voxel_pos_translated + vec3(1.0, 1.0, 0.0);
-//        v15.packed_data = x2_packed_data;
-//
-//        v16.position = voxel_pos_translated + vec3(1.0, 1.0, 0.0);
-//        v16.packed_data = x2_packed_data;
-//        v17.position = voxel_pos_translated + vec3(0.0, 1.0, 0.0);
-//        v17.packed_data = x2_packed_data;
-//        v18.position = voxel_pos_translated + vec3(0.0, 0.0, 0.0);
-//        v18.packed_data = x2_packed_data;
-//
-//        vertices[local_base_idx] = v13;
-//        vertices[local_base_idx + 1] = v14;
-//        vertices[local_base_idx + 2] = v15;
-//        vertices[local_base_idx + 3] = v16;
-//        vertices[local_base_idx + 4] = v17;
-//        vertices[local_base_idx + 5] = v18;
-//
-//        local_base_idx += 6;
-//    }
-//
-//    if (add_z1){
-//        uint normal_index = 3;
-//        col_idx = 5;
-//        uint x3_packed_data = (col_idx & 255) | (normal_index << 8);
-//
-//        Vertex v19, v20, v21, v22, v23, v24;
-//        v19.position = voxel_pos_translated + vec3(0.0, 0.0, 1.0);
-//        v19.packed_data = x3_packed_data;
-//        v20.position = voxel_pos_translated + vec3(1.0, 1.0, 1.0);
-//        v20.packed_data = x3_packed_data;
-//        v21.position = voxel_pos_translated + vec3(1.0, 0.0, 1.0);
-//        v21.packed_data = x3_packed_data;
-//
-//        v22.position = voxel_pos_translated + vec3(1.0, 1.0, 1.0);
-//        v22.packed_data = x3_packed_data;
-//        v23.position = voxel_pos_translated + vec3(0.0, 0.0, 1.0);
-//        v23.packed_data = x3_packed_data;
-//        v24.position = voxel_pos_translated + vec3(0.0, 1.0, 1.0);
-//        v24.packed_data = x3_packed_data;
-//
-//        vertices[local_base_idx] = v19;
-//        vertices[local_base_idx + 1] = v20;
-//        vertices[local_base_idx + 2] = v21;
-//        vertices[local_base_idx + 3] = v22;
-//        vertices[local_base_idx + 4] = v23;
-//        vertices[local_base_idx + 5] = v24;
-//
-//        local_base_idx += 6;
-//    }
-//    
-//    if (add_y0){
-//        uint normal_index = 4;
-//        col_idx = 2;
-//        uint x4_packed_data = (col_idx & 255) | (normal_index << 8);
-//
-//        Vertex v25, v26, v27, v28, v29, v30;
-//        v25.position = voxel_pos_translated + vec3(0.0, 0.0, 0.0);
-//        v25.packed_data = x4_packed_data;
-//        v26.position = voxel_pos_translated + vec3(1.0, 0.0, 1.0);
-//        v26.packed_data = x4_packed_data;
-//        v27.position = voxel_pos_translated + vec3(1.0, 0.0, 0.0);
-//        v27.packed_data = x4_packed_data;
-//
-//        v28.position = voxel_pos_translated + vec3(1.0, 0.0, 1.0);
-//        v28.packed_data = x4_packed_data;
-//        v29.position = voxel_pos_translated + vec3(0.0, 0.0, 0.0);
-//        v29.packed_data = x4_packed_data;
-//        v30.position = voxel_pos_translated + vec3(0.0, 0.0, 1.0);
-//        v30.packed_data = x4_packed_data;
-//
-//        vertices[local_base_idx] = v25;
-//        vertices[local_base_idx + 1] = v26;
-//        vertices[local_base_idx + 2] = v27;
-//        vertices[local_base_idx + 3] = v28;
-//        vertices[local_base_idx + 4] = v29;
-//        vertices[local_base_idx + 5] = v30;
-//
-//        local_base_idx += 6;
-//    }
-//    
-//    if (add_y1){
-//        uint normal_index = 5;
-//        col_idx = 3;
-//        uint x5_packed_data = (col_idx & 255) | (normal_index << 8);
-//
-//        Vertex v31, v32, v33, v34, v35, v36;
-//        v31.position = voxel_pos_translated + vec3(0.0, 1.0, 0.0);
-//        v31.packed_data = x5_packed_data;
-//        v32.position = voxel_pos_translated + vec3(1.0, 1.0, 0.0);
-//        v32.packed_data = x5_packed_data;
-//        v33.position = voxel_pos_translated + vec3(1.0, 1.0, 1.0);
-//        v33.packed_data = x5_packed_data;
-//
-//        v34.position = voxel_pos_translated + vec3(1.0, 1.0, 1.0);
-//        v34.packed_data = x5_packed_data;
-//        v35.position = voxel_pos_translated + vec3(0.0, 1.0, 1.0);
-//        v35.packed_data = x5_packed_data;
-//        v36.position = voxel_pos_translated + vec3(0.0, 1.0, 0.0);
-//        v36.packed_data = x5_packed_data;
-//
-//        vertices[local_base_idx] = v31;
-//        vertices[local_base_idx + 1] = v32;
-//        vertices[local_base_idx + 2] = v33;
-//        vertices[local_base_idx + 3] = v34;
-//        vertices[local_base_idx + 4] = v35;
-//        vertices[local_base_idx + 5] = v36;
-//
-//        local_base_idx += 6;
-//    }
 }
