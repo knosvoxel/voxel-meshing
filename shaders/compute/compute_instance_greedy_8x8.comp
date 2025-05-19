@@ -62,7 +62,6 @@ shared uint processing_buffer_z1[8];
 void main() {
     vec3 voxel_pos = gl_GlobalInvocationID;
     vec3 local_pos = gl_LocalInvocationID.yzx;
-//    uint local_index = gl_LocalInvocationIndex; // value between 0 and 511
 
     vec3 offset_size = instance_data.instance_size.xyz;
     vec3 model_size = instance_data.remapped_size.xyz;
@@ -72,8 +71,6 @@ void main() {
     VoxelData voxel_data = voxels[voxel_index / 4];
     uint shift = 8 * (voxel_index % 4);
     uint col_idx = (voxel_data.four_voxels >> shift) & 255;
-
-    if (col_idx == 0) return;
 
     // initialize occupied_voxels array to 0. Only set occupied voxels to 1 (early return for empty ones)
     if (gl_LocalInvocationIndex == 0){
@@ -89,15 +86,6 @@ void main() {
 
     // wait for all invocations to receive the initialized occupied_voxels array
     barrier();
-
-//    col_idx = correct_occupy_uint + 1 + gl_WorkGroupID.x % 2;
-//
-
-    // voxel empty = pass
-//    if(col_idx == 0) {
-//        atomicOr(processing_buffer_y0[correct_y_mask], 1 << (16 + correct_processing_bit)
-//        return
-//    };
 
     // workgroup visualization debug
     //    col_idx = (gl_WorkGroupID.x 
@@ -183,13 +171,27 @@ void main() {
 
     //uint local_z_index = TODO;
 
-    // 0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0
-    // ... | 32768 16384 8192 4096 2048 1024 512 256 | 128 64 32 16 8 4 2 1
-    // step down in face size
+    // step down in face size // 8 * 8 | 4 * 4 | 2 * 2 | 1 * 1
     // i: used to calculate correct bit positions
-    for (int i = 8; i > 0; i /= 2){ // 1 | 4 | 16 work blocks
+    for (int i = 8; i > 0; i /= 2){
 
-//      ...............
+    
+        ///////
+        // 0 // layer 0
+        ///////
+
+        /////////
+        // 2 3 //
+        // 0 1 // layer 1
+        /////////
+
+        /////////////////
+        // 12 13 14 15 //
+        // 8  9  10 11 //
+        // 4  5  6  7  //
+        // 0  1  2  3  // layer 2
+        /////////////////
+
         //x
         /////////////////////////////
         // 56 57 58 59 60 61 62 63 //
@@ -201,22 +203,6 @@ void main() {
         // 8  9  10 11 12 13 14 15 //
         // 0  1  2  3  4  5  6  7  // layer 3
         /////////////////////////////z
-
-        /////////////////
-        // 12 13 14 15 //
-        // 8  9  10 11 //
-        // 4  5  6  7  //
-        // 0  1  2  3  // layer 2
-        /////////////////
-
-        /////////
-        // 2 3 //
-        // 0 1 // layer 1
-        /////////
-
-        ///////
-        // 0 // layer 0
-        ///////
 
         //   face y0  //
 
@@ -230,6 +216,7 @@ void main() {
         if (!bool((processing_buffer_y0[correct_y_mask] >> (y_mask_done_bit)) & 1)){     // 0 = face not processed yet
 
             // if not layer 3
+            // up to layer 2, single faces are handled differently
             if (i > 1){
                 // example 17: 
                 // layer 0: i = 3 | (8 / 8) * (2 / 8) + 1 / 8 = 1 * 0 + 0 = 0
@@ -237,9 +224,8 @@ void main() {
                 // layer 2: i = 1 | (8 / 2) * (2 / 2) + 1 / 2 = 4 * 1 + 0 = 4
                 // layer 3: i = 0 | (8 / 1) * (2 / 1) + 1 / 1 = 8 * 2 + 1 = 17
 
-//                barrier();
                 // processing bits from left to right (uint layout): | 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0 | done data |
-                // up to layer 2, single faces are handled differently
+
                 int correct_processing_bit = (8 / i) * (int(local_pos.z) / i) + (int(local_pos.x) / i);
                 
                 // check whether face can potentially be processed into bigger face based on neighbouring color indices
@@ -251,11 +237,11 @@ void main() {
 
                 if(x0_in_area)
                     processing_bit_x0 = (8 / i) * (int(local_pos.z) / i) + (int(local_pos.x - 1.0) / i);
-                if (x1_in_area && int(local_pos.x + 1) < 8)
+                if(x1_in_area)
                     processing_bit_x1 = (8 / i) * (int(local_pos.z) / i) + (int(local_pos.x + 1.0) / i);
                 if(z0_in_area)
                     processing_bit_z0 = (8 / i) * (int(local_pos.z - 1.0) / i) + (int(local_pos.x) / i);
-                if (z1_in_area && int(local_pos.z + 1) < 8)
+                if(z1_in_area)
                     processing_bit_z1 = (8 / i) * (int(local_pos.z + 1.0) / i) + (int(local_pos.x) / i);
 
                 if (
@@ -283,7 +269,7 @@ void main() {
                     if (int(local_pos.x) % i == 0 && int(local_pos.z) % i == 0){
                         uint local_base_idx = atomicAdd(indirect_command.count, 6);
                         
-                        uint normal_index = 5; // todo: change back to 4
+                        uint normal_index = 5;
                         uint x4_packed_data = (col_idx & 255) | (normal_index << 8);
 
                         Vertex v0, v1, v2, v3, v4, v5;
@@ -310,22 +296,20 @@ void main() {
                     }
 
                     atomicOr(processing_buffer_y0[correct_y_mask], 1 << (y_mask_done_bit));
-                }
 
-                barrier();
+                }
 
             }
 
             else{
 
-                if (col_idx_y0 != 0)
+                if (col_idx_y0 != 0 || col_idx == 0)
                     continue;
-//                if (col_idx == 0) return;
                 // single face at position
 
                 uint local_base_idx = atomicAdd(indirect_command.count, 6);
 
-                uint normal_index = 5; // todo: change back to 4
+                uint normal_index = 4;
                 uint x4_packed_data = (col_idx & 255) | (normal_index << 8);
 
                 Vertex v0, v1, v2, v3, v4, v5;
@@ -350,11 +334,7 @@ void main() {
                 vertices[local_base_idx + 4] = v4;
                 vertices[local_base_idx + 5] = v5;
             }
-
-            barrier();
-
         }
-
 
         barrier();
 
