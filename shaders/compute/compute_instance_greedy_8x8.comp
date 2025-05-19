@@ -269,7 +269,7 @@ void main() {
                     if (int(local_pos.x) % i == 0 && int(local_pos.z) % i == 0){
                         uint local_base_idx = atomicAdd(indirect_command.count, 6);
                         
-                        uint normal_index = 5;
+                        uint normal_index = 4;
                         uint x4_packed_data = (col_idx & 255) | (normal_index << 8);
 
                         Vertex v0, v1, v2, v3, v4, v5;
