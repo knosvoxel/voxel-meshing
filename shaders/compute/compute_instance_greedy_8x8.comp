@@ -177,7 +177,7 @@ void main() {
     }
 
     uint correct_y_mask = uint(local_pos.y); // value between 0 and 7
-    uint y_mask_done_bit = uint(4.0 * (local_pos.x / 2) + (local_pos.z / 2)); // value between 0 and 15         2nd half of bits is used to process data
+    uint y_mask_done_bit = uint(4 * (uint(local_pos.x) / 2) + uint(local_pos.z) / 2); // value between 0 and 15         2nd half of bits is used to process data
 
     //uint local_x_index = TODO;
 
