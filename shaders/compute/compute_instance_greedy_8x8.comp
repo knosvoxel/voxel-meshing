@@ -204,13 +204,14 @@ void main() {
         // 0  1  2  3  4  5  6  7  // layer 3
         /////////////////////////////z
 
-        //   face y0  //
-
         if (gl_LocalInvocationIndex == 0){
             for (int i = 0; i < 8; i++){
                 atomicAnd(processing_buffer_y0[i], 0x0000FFFF);
+                atomicAnd(processing_buffer_y1[i], 0x0000FFFF);
             }
         }
+
+        //   face y0  //
 
         // check if 2x2 group of voxels has been processed yet
         if (!bool((processing_buffer_y0[correct_y_mask] >> (y_mask_done_bit)) & 1)){     // 0 = face not processed yet
@@ -259,7 +260,6 @@ void main() {
                 // wait for all faces to write their bits into the processing mask
                 barrier();
 
-                // always 1?
                 uint processing_bit_state = (processing_buffer_y0[correct_y_mask] >> (16 + correct_processing_bit)) & 1;
                 // 0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0
 
@@ -302,43 +302,171 @@ void main() {
             }
 
             else{
-
-                if (col_idx_y0 != 0 || col_idx == 0)
-                    continue;
                 // single face at position
+                if (col_idx_y0 == 0 && col_idx != 0){
+                    uint local_base_idx = atomicAdd(indirect_command.count, 6);
 
-                uint local_base_idx = atomicAdd(indirect_command.count, 6);
+                    uint normal_index = 4;
+                    uint x4_packed_data = (col_idx & 255) | (normal_index << 8);
 
-                uint normal_index = 4;
-                uint x4_packed_data = (col_idx & 255) | (normal_index << 8);
+                    Vertex v0, v1, v2, v3, v4, v5;
+                    v0.position = voxel_pos_translated + vec3(0.0, 0.0, 0.0);
+                    v0.packed_data = x4_packed_data;
+                    v1.position = voxel_pos_translated + vec3(1.0, 0.0, 1.0);
+                    v1.packed_data = x4_packed_data;
+                    v2.position = voxel_pos_translated + vec3(1.0, 0.0, 0.0);
+                    v2.packed_data = x4_packed_data;
 
-                Vertex v0, v1, v2, v3, v4, v5;
-                v0.position = voxel_pos_translated + vec3(0.0, 0.0, 0.0);
-                v0.packed_data = x4_packed_data;
-                v1.position = voxel_pos_translated + vec3(1.0, 0.0, 1.0);
-                v1.packed_data = x4_packed_data;
-                v2.position = voxel_pos_translated + vec3(1.0, 0.0, 0.0);
-                v2.packed_data = x4_packed_data;
+                    v3.position = voxel_pos_translated + vec3(1.0, 0.0, 1.0);
+                    v3.packed_data = x4_packed_data;
+                    v4.position = voxel_pos_translated + vec3(0.0, 0.0, 0.0);
+                    v4.packed_data = x4_packed_data;
+                    v5.position = voxel_pos_translated + vec3(0.0, 0.0, 1.0);
+                    v5.packed_data = x4_packed_data;
 
-                v3.position = voxel_pos_translated + vec3(1.0, 0.0, 1.0);
-                v3.packed_data = x4_packed_data;
-                v4.position = voxel_pos_translated + vec3(0.0, 0.0, 0.0);
-                v4.packed_data = x4_packed_data;
-                v5.position = voxel_pos_translated + vec3(0.0, 0.0, 1.0);
-                v5.packed_data = x4_packed_data;
-
-                vertices[local_base_idx] = v0;
-                vertices[local_base_idx + 1] = v1;
-                vertices[local_base_idx + 2] = v2;
-                vertices[local_base_idx + 3] = v3;
-                vertices[local_base_idx + 4] = v4;
-                vertices[local_base_idx + 5] = v5;
+                    vertices[local_base_idx] = v0;
+                    vertices[local_base_idx + 1] = v1;
+                    vertices[local_base_idx + 2] = v2;
+                    vertices[local_base_idx + 3] = v3;
+                    vertices[local_base_idx + 4] = v4;
+                    vertices[local_base_idx + 5] = v5;
+                }
             }
         }
 
         barrier();
 
         // face y0 end //
+
+        //   face y1  //
+
+        // check if 2x2 group of voxels has been processed yet
+        if (!bool((processing_buffer_y1[correct_y_mask] >> (y_mask_done_bit)) & 1)){     // 0 = face not processed yet
+
+            // if not layer 3
+            // up to layer 2, single faces are handled differently
+            if (i > 1){
+                // example 17: 
+                // layer 0: i = 3 | (8 / 8) * (2 / 8) + 1 / 8 = 1 * 0 + 0 = 0
+                // layer 1: i = 2 | (8 / 4) * (2 / 4) + 1 / 4 = 2 * 0 + 0 = 0
+                // layer 2: i = 1 | (8 / 2) * (2 / 2) + 1 / 2 = 4 * 1 + 0 = 4
+                // layer 3: i = 0 | (8 / 1) * (2 / 1) + 1 / 1 = 8 * 2 + 1 = 17
+
+                // processing bits from left to right (uint layout): | 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0 | done data |
+
+                int correct_processing_bit = (8 / i) * (int(local_pos.z) / i) + (int(local_pos.x) / i);
+                
+                // check whether face can potentially be processed into bigger face based on neighbouring color indices
+
+                int processing_bit_x0 = -1;
+                int processing_bit_x1 = -1;
+                int processing_bit_z0 = -1;
+                int processing_bit_z1 = -1;
+
+                if(x0_in_area)
+                    processing_bit_x0 = (8 / i) * (int(local_pos.z) / i) + (int(local_pos.x - 1.0) / i);
+                if(x1_in_area)
+                    processing_bit_x1 = (8 / i) * (int(local_pos.z) / i) + (int(local_pos.x + 1.0) / i);
+                if(z0_in_area)
+                    processing_bit_z0 = (8 / i) * (int(local_pos.z - 1.0) / i) + (int(local_pos.x) / i);
+                if(z1_in_area)
+                    processing_bit_z1 = (8 / i) * (int(local_pos.z + 1.0) / i) + (int(local_pos.x) / i);
+
+                if (
+                    ((correct_processing_bit == processing_bit_x0 && (int(local_pos.x) % i != 0)) && col_idx_x0 != col_idx) ||
+                    ((correct_processing_bit == processing_bit_x1 && (int(local_pos.x + 1) % i != 0)) && col_idx_x1 != col_idx) ||
+                    ((correct_processing_bit == processing_bit_z0 && (int(local_pos.z) % i != 0)) && col_idx_z0 != col_idx) ||
+                    ((correct_processing_bit == processing_bit_z1 && (int(local_pos.z + 1) % i != 0)) && col_idx_z1 != col_idx) ||
+                    (col_idx_y1 != 0) ||
+                    (col_idx == 0)
+                )
+                {
+                    atomicOr(processing_buffer_y1[correct_y_mask], 1 << (16 + correct_processing_bit));
+                }
+
+                // wait for all faces to write their bits into the processing mask
+                barrier();
+
+                uint processing_bit_state = (processing_buffer_y1[correct_y_mask] >> (16 + correct_processing_bit)) & 1;
+                // 0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0
+
+                // if processing mask bit is still 0 this face can be created!
+                if ((processing_bit_state & 1) == 0)
+                {
+                    if (int(local_pos.x) % i == 0 && int(local_pos.z) % i == 0){
+                        uint local_base_idx = atomicAdd(indirect_command.count, 6);
+                        
+                        uint normal_index = 5;
+                        uint x4_packed_data = (col_idx & 255) | (normal_index << 8);
+
+                        Vertex v0, v1, v2, v3, v4, v5;
+                        v0.position = voxel_pos_translated + vec3(0.0, 1.0, 0.0);
+                        v0.packed_data = x4_packed_data;
+                        v1.position = voxel_pos_translated + vec3(1.0, 0.0, 0.0) * i + vec3(0.0, 1.0, 0.0);
+                        v1.packed_data = x4_packed_data;
+                        v2.position = voxel_pos_translated + vec3(1.0, 0.0, 1.0) * i + vec3(0.0, 1.0, 0.0);
+                        v2.packed_data = x4_packed_data;
+
+                        v3.position = voxel_pos_translated + vec3(1.0, 0.0, 1.0) * i + vec3(0.0, 1.0, 0.0);
+                        v3.packed_data = x4_packed_data;
+                        v4.position = voxel_pos_translated + vec3(0.0, 0.0, 1.0) * i + vec3(0.0, 1.0, 0.0);
+                        v4.packed_data = x4_packed_data;    
+                        v5.position = voxel_pos_translated + vec3(0.0, 1.0, 0.0);
+                        v5.packed_data = x4_packed_data;
+
+                        vertices[local_base_idx] = v0;
+                        vertices[local_base_idx + 1] = v1;
+                        vertices[local_base_idx + 2] = v2;
+                        vertices[local_base_idx + 3] = v3;
+                        vertices[local_base_idx + 4] = v4;
+                        vertices[local_base_idx + 5] = v5;
+                    }
+
+                    atomicOr(processing_buffer_y1[correct_y_mask], 1 << (y_mask_done_bit));
+
+                }
+
+            }
+
+            else{
+                // single face at position
+                if (col_idx_y1 == 0 && col_idx != 0){
+
+                    uint local_base_idx = atomicAdd(indirect_command.count, 6);
+
+                    uint normal_index = 5;
+                    uint x4_packed_data = (col_idx & 255) | (normal_index << 8);
+
+                    Vertex v0, v1, v2, v3, v4, v5;
+                    v0.position = voxel_pos_translated + vec3(0.0, 1.0, 0.0);
+                    v0.packed_data = x4_packed_data;
+                    v1.position = voxel_pos_translated + vec3(1.0, 1.0, 0.0);
+                    v1.packed_data = x4_packed_data;
+                    v2.position = voxel_pos_translated + vec3(1.0, 1.0, 1.0);
+                    v2.packed_data = x4_packed_data;
+
+                    v3.position = voxel_pos_translated + vec3(1.0, 1.0, 1.0);
+                    v3.packed_data = x4_packed_data;
+                    v4.position = voxel_pos_translated + vec3(0.0, 1.0, 1.0);
+                    v4.packed_data = x4_packed_data;
+                    v5.position = voxel_pos_translated + vec3(0.0, 1.0, 0.0);
+                    v5.packed_data = x4_packed_data;
+
+                    vertices[local_base_idx] = v0;
+                    vertices[local_base_idx + 1] = v1;
+                    vertices[local_base_idx + 2] = v2;
+                    vertices[local_base_idx + 3] = v3;
+                    vertices[local_base_idx + 4] = v4;
+                    vertices[local_base_idx + 5] = v5;
+                }
+            }
+        }
+
+
+        barrier();
+
+        // face y1 end //
+
     }
 
 
