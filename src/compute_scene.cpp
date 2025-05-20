@@ -32,10 +32,10 @@ void ComputeScene::load(const char* path)
 
 		buffer_size_compute.use();
 
-		instances.back().calculate_buffer_size(curr_model);
+		instances.back().calculate_buffer_size(curr_model, voxel_count);
 
 		compute.use();
-		instances.back().generate_mesh();
+		instances.back().generate_mesh(vertex_count);
 	}
 
 	// load palette into texture

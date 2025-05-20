@@ -14,6 +14,7 @@ typedef struct InstanceData {
 	glm::vec4 instance_size;
 	glm::vec4 remapped_size;
 	glm::vec4 instance_position_offset;
+	GLuint voxel_count = 0;
 };
 
 typedef struct Vertex {
@@ -66,8 +67,8 @@ public:
 	}
 
 	void prepare_model_data(const ogt_vox_model* model, glm::vec4 offset);
-	void calculate_buffer_size(const ogt_vox_model* model);
-	void generate_mesh();
+	void calculate_buffer_size(const ogt_vox_model* model, GLuint& voxel_count);
+	void generate_mesh(GLuint& vertex_count);
 
 	void render();
 

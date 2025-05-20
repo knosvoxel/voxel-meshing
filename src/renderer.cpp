@@ -107,9 +107,15 @@ void Renderer::imgui_render() {
     ImGui::Begin("Performance");
     ImGui::Text("Frametime: %.3f ms (FPS %.1f)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
+
     ImGui::Begin("Camera");
     ImGui::DragFloat3("Position", (float*)&camera.Position, 0.01f);
     ImGui::DragFloat("Movement Speed", (float*)&camera.MovementSpeed, 0.01f);
+    ImGui::End();
+
+    ImGui::Begin("Model Data");
+    ImGui::Text("Voxel Count: %1u", compute_scene.voxel_count);
+    ImGui::Text("Vertex Count: %1u (%1u faces)", compute_scene.vertex_count, compute_scene.vertex_count / 6);
     ImGui::End();
 
     ImGui::Render();
@@ -195,7 +201,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-    compute_scene.load("../res/vox/greedy.vox");
+    compute_scene.load("../res/vox/90mins.vox");
     //chunk.generate_buffers();
     //quad.generate_buffers();
 

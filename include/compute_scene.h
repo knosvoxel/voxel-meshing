@@ -37,7 +37,7 @@ public:
 
 	std::vector<ComputeInstance> instances;
 
-	GLuint palette;
+	GLuint palette, voxel_count, vertex_count;
 
 	Shader shader;
 	ComputeShader remap_to_8s_compute, buffer_size_compute, compute;

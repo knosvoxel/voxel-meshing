@@ -4,6 +4,7 @@ struct InstanceData{
     vec4 instance_size;
     vec4 remapped_size;
     vec4 instance_position_offset;
+    uint voxel_count;
 };
 
 struct VoxelData{
@@ -27,7 +28,7 @@ layout (binding = 1, std430) writeonly buffer vbo_size_buffer {
     uint vbo_size;
 };
 
-layout (binding = 2, std430) readonly buffer instance_data_buffer {
+layout (binding = 2, std430) buffer instance_data_buffer {
     InstanceData instance_data;
 };
 
@@ -116,4 +117,6 @@ void main() {
     if (add_z1) atomicAdd(vbo_size, 6);
     if (add_y0) atomicAdd(vbo_size, 6);
     if (add_y1) atomicAdd(vbo_size, 6);
+
+    atomicAdd(instance_data.voxel_count, 1);
 }

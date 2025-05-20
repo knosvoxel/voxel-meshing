@@ -36,7 +36,7 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
 
     glCreateBuffers(1, &instance_data_buffer);
 
-    glNamedBufferStorage(instance_data_buffer, sizeof(InstanceData), &instance_data, GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(instance_data_buffer, sizeof(InstanceData), &instance_data, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, remapped_ssbo);
@@ -52,7 +52,7 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
 }
 
 // Called second: Calculates required VBO size
-void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model)
+void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& voxel_count)
 {
     glCreateBuffers(1, &vbo_size_buffer);
 
@@ -80,11 +80,20 @@ void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model)
     vbo_size = *(GLuint*)vbo_size_ptr;
 
     glUnmapNamedBuffer(vbo_size_buffer);
+
+    // Read back vertex count
+    void* ptr = glMapNamedBuffer(instance_data_buffer, GL_READ_ONLY);
+    if (ptr) {
+        InstanceData* instance_data = (InstanceData*)ptr;
+        voxel_count += instance_data->voxel_count;
+        glUnmapNamedBuffer(instance_data_buffer);
+    }
+
     glDeleteBuffers(1, &vbo_size_buffer);
 }
 
 // Called third: fills VBO with data
-void ComputeInstance::generate_mesh() {
+void ComputeInstance::generate_mesh(GLuint& vertex_count) {
     DrawArraysIndirectCommand indirect_data{};
     indirect_data.count = 0;
     indirect_data.instanceCount = 1;
@@ -99,7 +108,7 @@ void ComputeInstance::generate_mesh() {
     glNamedBufferStorage(vbo, sizeof(Vertex) * vbo_size // * 32: Left out but technically required
         , nullptr, GL_DYNAMIC_STORAGE_BIT);
     glNamedBufferStorage(indirect_command, sizeof(DrawArraysIndirectCommand), &indirect_data,
-        GL_DYNAMIC_STORAGE_BIT);
+        GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
 
     // position attribute in the vertex shader
     glEnableVertexArrayAttrib(vao, 0);
@@ -126,6 +135,14 @@ void ComputeInstance::generate_mesh() {
         GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT |
         GL_COMMAND_BARRIER_BIT
     );
+
+    // Read back vertex count
+    void* ptr = glMapNamedBuffer(indirect_command, GL_READ_ONLY);
+    if (ptr) {
+        DrawArraysIndirectCommand* command_data = (DrawArraysIndirectCommand*)ptr;
+        vertex_count += command_data->count;
+        glUnmapNamedBuffer(indirect_command);
+    }
 };
 
 void ComputeInstance::render()
