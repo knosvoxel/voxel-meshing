@@ -42,6 +42,7 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, remapped_ssbo);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, instance_data_buffer);
 
+    // remap_to_8s
     glDispatchCompute(model_size_x, model_size_y, model_size_z);
 
     glMemoryBarrier(
@@ -50,6 +51,7 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
 
     glDeleteBuffers(1, &voxel_ssbo);
 }
+
 
 // Called second: Calculates required VBO size
 void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& voxel_count)
@@ -65,6 +67,7 @@ void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& 
 
     glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);
 
+    // buffer_size_compute
     glMemoryBarrier(
         GL_SHADER_STORAGE_BARRIER_BIT
     );
@@ -81,7 +84,7 @@ void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& 
 
     glUnmapNamedBuffer(vbo_size_buffer);
 
-    // Read back vertex count
+    // Read back voxel count
     void* ptr = glMapNamedBuffer(instance_data_buffer, GL_READ_ONLY);
     if (ptr) {
         InstanceData* instance_data = (InstanceData*)ptr;
@@ -128,6 +131,7 @@ void ComputeInstance::generate_mesh(GLuint& vertex_count) {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, indirect_command);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, instance_data_buffer);
 
+    // compute
     glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);
 
     glMemoryBarrier(

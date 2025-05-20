@@ -12,6 +12,13 @@
 
 #include "compute_instance.h"
 
+typedef struct RotationData {
+	glm::vec4 instance_size;
+	glm::vec4 rotated_size;
+	glm::vec4 min_bounds;
+	glm::mat4 transform;
+};
+
 class ComputeScene {
 public:
 	ComputeScene() {};
@@ -35,10 +42,12 @@ public:
 	void load(const char* path);
 	void render(glm::mat4 mvp, float current_frame);
 
+	ogt_vox_model apply_rotations(const ogt_vox_instance* instance, const ogt_vox_model** models, const ogt_vox_group* groups, glm::vec3& instance_size);
+
 	std::vector<ComputeInstance> instances;
 
-	GLuint palette, voxel_count, vertex_count;
+	GLuint palette, voxel_count, vertex_count, instance_temp_ssbo, rotated_temp_ssbo, rotation_data_temp_buffer;
 
 	Shader shader;
-	ComputeShader remap_to_8s_compute, buffer_size_compute, compute;
+	ComputeShader remap_to_8s_compute, apply_rotations_compute, buffer_size_compute, compute;
 };
