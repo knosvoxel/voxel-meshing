@@ -104,7 +104,7 @@ void Renderer::imgui_render() {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Model Data", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
+    ImGui::Begin("Model Data", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
     ImGui::Text("Voxel Count: %1u", compute_scene.voxel_count);
     ImGui::Text("Vertex Count: %1u (%1u faces)", compute_scene.vertex_count, compute_scene.vertex_count / 6);
     ImGui::End();

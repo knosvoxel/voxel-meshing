@@ -43,9 +43,10 @@ void ComputeScene::load(const char* path)
 	apply_rotations_compute = ComputeShader("../shaders/compute/apply_rotations.comp");
 	remap_to_8s_compute = ComputeShader("../shaders/compute/remap_to_8s.comp");
 	buffer_size_compute = ComputeShader("../shaders/compute/calculate_buffer_size.comp");
-	compute = ComputeShader("../shaders/compute/compute_instance_greedy_8x8.comp");
+	meshing_compute = ComputeShader("../shaders/compute/compute_instance.comp");
+	greedy_8x8_compute = ComputeShader("../shaders/compute/compute_instance_greedy_8x8.comp");
 
-	const ogt_vox_scene* vox_scene = load_vox_scene_with_groups(path);
+	const ogt_vox_scene* vox_scene = load_vox_scene(path);
 
 	// load instances
 	for (size_t i = 0; i < vox_scene->num_instances; i++)
@@ -59,21 +60,11 @@ void ComputeScene::load(const char* path)
 
 		// directly create instance within the vector container w/o a temporary value
 		instances.emplace_back();
-
-		apply_rotations_compute.use();
-		
 		glm::ivec3 instance_size;
-		const ogt_vox_model rotated_model = apply_rotations(vox_scene, i, instance_size);
-
-		remap_to_8s_compute.use();
-		instances.back().prepare_model_data(&rotated_model, instance_offset);
-
-		buffer_size_compute.use();
-
-		instances.back().calculate_buffer_size(&rotated_model, voxel_count);
-
-		compute.use();
-		instances.back().generate_mesh(vertex_count);
+		const ogt_vox_model rotated_model = apply_rotations(vox_scene, i, instance_size, apply_rotations_compute);
+		instances.back().prepare_model_data(&rotated_model, instance_offset, remap_to_8s_compute);
+		instances.back().calculate_buffer_size(&rotated_model, voxel_count, buffer_size_compute);
+		instances.back().generate_mesh(vertex_count, greedy_8x8_compute);
 	}
 
 	// load palette into texture
@@ -115,7 +106,7 @@ void ComputeScene::render(glm::mat4 mvp, float current_frame)
 // helper functions and rotation logic based on vengi
 // https://github.com/vengi-voxel/vengi/tree/163732702a5685cf591efbe7f2dc5c33fffe8fc7
 
-ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t instance_idx, glm::ivec3& instance_size)
+ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t instance_idx, glm::ivec3& instance_size, ComputeShader& compute)
 {
 	const ogt_vox_instance& instance = scene->instances[instance_idx];
 	const ogt_vox_model* model = scene->models[instance.model_index];
@@ -168,6 +159,8 @@ ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, instance_temp_ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, rotated_temp_ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, rotation_data_temp_buffer);
+
+	compute.use();
 
 	// apply_rotations_compute
 	glDispatchCompute(model->size_x, model->size_y, model->size_z);

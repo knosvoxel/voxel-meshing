@@ -10,7 +10,7 @@ ComputeInstance::~ComputeInstance()
 }
 
 // Called first: remaps voxel data to multiples of 8
-void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 offset)
+void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 offset, ComputeShader& compute)
 {
     uint32_t model_size_x = model->size_x;
     uint32_t model_size_y = model->size_y;
@@ -42,6 +42,8 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, remapped_ssbo);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, instance_data_buffer);
 
+    compute.use();
+
     // remap_to_8s
     glDispatchCompute(model_size_x, model_size_y, model_size_z);
 
@@ -54,7 +56,7 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
 
 
 // Called second: Calculates required VBO size
-void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& voxel_count)
+void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& voxel_count, ComputeShader& compute)
 {
     glCreateBuffers(1, &vbo_size_buffer);
 
@@ -64,6 +66,8 @@ void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, remapped_ssbo);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo_size_buffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, instance_data_buffer);
+
+    compute.use();
 
     glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);
 
@@ -96,7 +100,7 @@ void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& 
 }
 
 // Called third: fills VBO with data
-void ComputeInstance::generate_mesh(GLuint& vertex_count) {
+void ComputeInstance::generate_mesh(GLuint& vertex_count, ComputeShader& compute) {
     DrawArraysIndirectCommand indirect_data{};
     indirect_data.count = 0;
     indirect_data.instanceCount = 1;
@@ -130,6 +134,8 @@ void ComputeInstance::generate_mesh(GLuint& vertex_count) {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, indirect_command);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, instance_data_buffer);
+
+    compute.use();
 
     // compute
     glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);

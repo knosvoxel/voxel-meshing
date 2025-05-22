@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "ogt_wrapper.h"
+#include <learnopengl/compute.h>
 
 typedef struct InstanceData {
 	glm::vec4 instance_size;
@@ -66,9 +67,9 @@ public:
 		*this = std::move(other);
 	}
 
-	void prepare_model_data(const ogt_vox_model* model, glm::vec4 offset);
-	void calculate_buffer_size(const ogt_vox_model* model, GLuint& voxel_count);
-	void generate_mesh(GLuint& vertex_count);
+	void prepare_model_data(const ogt_vox_model* model, glm::vec4 offset, ComputeShader& compute);
+	void calculate_buffer_size(const ogt_vox_model* model, GLuint& voxel_count, ComputeShader& compute);
+	void generate_mesh(GLuint& vertex_count, ComputeShader& compute);
 
 	void render();
 

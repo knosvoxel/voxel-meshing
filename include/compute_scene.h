@@ -31,7 +31,7 @@ public:
 			instances = std::move(other.instances);
 			palette = other.palette;
 			shader = std::move(other.shader);
-			compute = std::move(other.compute);
+			meshing_compute = std::move(other.meshing_compute);
 
 			// Leave the other object in a valid state
 			other.palette = 0;
@@ -42,12 +42,12 @@ public:
 	void load(const char* path);
 	void render(glm::mat4 mvp, float current_frame);
 
-	ogt_vox_model apply_rotations(const ogt_vox_scene* scene, uint32_t instance_idx, glm::ivec3& instance_size);
+	ogt_vox_model apply_rotations(const ogt_vox_scene* scene, uint32_t instance_idx, glm::ivec3& instance_size, ComputeShader& compute);
 
 	std::vector<ComputeInstance> instances;
 
 	GLuint palette, voxel_count, vertex_count, instance_temp_ssbo, rotated_temp_ssbo, rotation_data_temp_buffer;
 
 	Shader shader;
-	ComputeShader remap_to_8s_compute, apply_rotations_compute, buffer_size_compute, compute;
+	ComputeShader remap_to_8s_compute, apply_rotations_compute, buffer_size_compute, meshing_compute, greedy_8x8_compute;
 };
