@@ -60,8 +60,7 @@ void ComputeScene::load(const char* path)
 
 		// directly create instance within the vector container w/o a temporary value
 		instances.emplace_back();
-		glm::ivec3 instance_size;
-		const ogt_vox_model rotated_model = apply_rotations(vox_scene, i, instance_size, apply_rotations_compute);
+		const ogt_vox_model rotated_model = apply_rotations(vox_scene, i, apply_rotations_compute);
 		instances.back().prepare_model_data(&rotated_model, instance_offset, remap_to_8s_compute);
 		instances.back().calculate_buffer_size(&rotated_model, voxel_count, buffer_size_compute);
 		instances.back().generate_mesh(vertex_count, greedy_8x8_compute);
@@ -106,7 +105,7 @@ void ComputeScene::render(glm::mat4 mvp, float current_frame)
 // helper functions and rotation logic based on vengi
 // https://github.com/vengi-voxel/vengi/tree/163732702a5685cf591efbe7f2dc5c33fffe8fc7
 
-ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t instance_idx, glm::ivec3& instance_size, ComputeShader& compute)
+ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t instance_idx, ComputeShader& compute)
 {
 	const ogt_vox_instance& instance = scene->instances[instance_idx];
 	const ogt_vox_model* model = scene->models[instance.model_index];
@@ -134,7 +133,7 @@ ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t
 		max_bounds = glm::max(max_bounds, floored_corner);
 	}
 
-	instance_size = glm::ivec3(max_bounds - min_bounds) + glm::ivec3(1); // +1 since voxel grids are inclusive
+	glm::ivec3 instance_size = glm::ivec3(max_bounds - min_bounds) + glm::ivec3(1); // +1 since voxel grids are inclusive
 
 	// apply_rotations_compute
 	const uint8_t* voxel_data = model->voxel_data;
