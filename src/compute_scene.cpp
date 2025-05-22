@@ -112,6 +112,9 @@ void ComputeScene::render(glm::mat4 mvp, float current_frame)
 	}
 }
 
+// helper functions and rotation logic based on vengi
+// https://github.com/vengi-voxel/vengi/tree/163732702a5685cf591efbe7f2dc5c33fffe8fc7
+
 ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t instance_idx, glm::ivec3& instance_size)
 {
 	const ogt_vox_instance& instance = scene->instances[instance_idx];
