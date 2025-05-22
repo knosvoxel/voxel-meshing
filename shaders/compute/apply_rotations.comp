@@ -37,14 +37,17 @@ void main() {
 
     if (col_idx == 0) return;
 
-    vec4 rotated_pos = rotation_data.transform * vec4(voxel_pos, 1.0);
+    // rotate
+    vec4 rotated_pos = floor(rotation_data.transform * vec4(voxel_pos, 1.0));
+
+    // subtract min_bounds
     rotated_pos.xyz -= rotation_data.min_bounds.xyz;
 
-    vec3 rotated_size = rotation_data.rotated_size.xyz;
-    uint new_index = uint(rotated_pos.x + (rotated_pos.y * rotated_size.x) + (rotated_pos.z * rotated_size.x * rotated_size.y));
+    uint new_index = uint(rotated_pos.x + (rotated_pos.y * rotation_data.rotated_size.x) + (rotated_pos.z * rotation_data.rotated_size.x * rotation_data.rotated_size.y));
 
     uint target_voxel_data = new_index / 4;
     uint shift_new = 8 * (new_index % 4);
 
     atomicOr(rotated_voxels[target_voxel_data], (col_idx << shift_new));
+
 }

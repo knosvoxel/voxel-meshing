@@ -4,7 +4,7 @@ static Renderer& renderer = Renderer::getInstance();
 
 // Camera settings
 const float NEAR = 0.1f;
-const float FAR = 1000.0f;
+const float FAR = 10000.0f;
 
 glm::vec3 cam_pos(60.0f, 35.0f, 60.0f);
 float yaw = 225.0f;
@@ -201,7 +201,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-    compute_scene.load("../res/vox/rotation.vox");
+    compute_scene.load("../res/vox/test-transform.vox");
     //chunk.generate_buffers();
     //quad.generate_buffers();
 

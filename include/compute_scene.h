@@ -42,7 +42,7 @@ public:
 	void load(const char* path);
 	void render(glm::mat4 mvp, float current_frame);
 
-	ogt_vox_model apply_rotations(const ogt_vox_instance* instance, const ogt_vox_model** models, const ogt_vox_group* groups, glm::vec3& instance_size);
+	ogt_vox_model apply_rotations(const ogt_vox_scene* scene, uint32_t instance_idx, glm::ivec3& instance_size);
 
 	std::vector<ComputeInstance> instances;
 

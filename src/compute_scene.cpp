@@ -1,25 +1,35 @@
 #include "compute_scene.h"
 
-glm::mat4 ogt_transform_to_glm(const ogt_vox_transform& t)
-{
-	return glm::mat4(
-		t.m00, t.m10, t.m20, t.m30,
-		t.m01, t.m11, t.m21, t.m31,
-		t.m02, t.m12, t.m22, t.m32,
-		t.m03, t.m13, t.m23, t.m33
-	);
+static inline glm::mat4 compute_transform_mat(const glm::mat4 transform, const glm::vec3& pivot) {
+	static const glm::mat4 shift_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f));
+	const glm::mat4 pivot_matrix = glm::translate(glm::mat4(1.0f), -pivot);
+	const glm::mat4 combined_matrix = transform * shift_matrix * pivot_matrix;
+	return combined_matrix;
 }
 
-ogt_vox_transform glm_to_ogt_transform(const glm::mat4& m)
+inline glm::ivec3 calc_transform(const glm::mat4& mat, const glm::vec3& pos)
 {
-	ogt_vox_transform t;
+	return glm::floor(mat * glm::vec4(pos, 1.0f));
+}
 
-	t.m00 = m[0][0]; t.m10 = m[0][1]; t.m20 = m[0][2]; t.m30 = m[0][3];
-	t.m01 = m[1][0]; t.m11 = m[1][1]; t.m21 = m[1][2]; t.m31 = m[1][3];
-	t.m02 = m[2][0]; t.m12 = m[2][1]; t.m22 = m[2][2]; t.m32 = m[2][3];
-	t.m03 = m[3][0]; t.m13 = m[3][1]; t.m23 = m[3][2]; t.m33 = m[3][3];
+static inline glm::vec4 instance_pivot(const ogt_vox_model* model) {
+	return floor(glm::vec4(model->size_x / 2, model->size_y / 2, model->size_z / 2, 0.0f));
+}
 
-	return t;
+static inline glm::vec3 volume_size(const ogt_vox_model* model) {
+	return glm::vec3(model->size_x - 1, model->size_y - 1, model->size_z - 1);
+}
+
+
+static glm::mat4 ogt_transform_to_glm(const ogt_vox_scene* scene, const ogt_vox_instance& instance, const ogt_vox_model* model)
+{
+	ogt_vox_transform t = ogt_vox_sample_instance_transform(&instance, 0, scene);
+	const glm::vec4 col0(t.m00, t.m01, t.m02, t.m03);
+	const glm::vec4 col1(t.m10, t.m11, t.m12, t.m13);
+	const glm::vec4 col2(t.m20, t.m21, t.m22, t.m23);
+	const glm::vec4 col3(t.m30, t.m31, t.m32, t.m33);
+	const glm::vec3& pivot = instance_pivot(model);
+	return compute_transform_mat(glm::mat4(col0, col1, col2, col3), pivot);
 }
 
 ComputeScene::~ComputeScene(){
@@ -35,7 +45,7 @@ void ComputeScene::load(const char* path)
 	buffer_size_compute = ComputeShader("../shaders/compute/calculate_buffer_size.comp");
 	compute = ComputeShader("../shaders/compute/compute_instance_greedy_8x8.comp");
 
-	const ogt_vox_scene* vox_scene = load_vox_scene(path);
+	const ogt_vox_scene* vox_scene = load_vox_scene_with_groups(path);
 
 	// load instances
 	for (size_t i = 0; i < vox_scene->num_instances; i++)
@@ -43,17 +53,17 @@ void ComputeScene::load(const char* path)
 		const ogt_vox_instance* curr_instance = &vox_scene->instances[i]; // currently only with one instance
 		const ogt_vox_model* curr_model = vox_scene->models[curr_instance->model_index];
 
-		ogt_vox_transform instance_transform = curr_instance->transform;
+		ogt_vox_transform instance_transform = ogt_vox_sample_instance_transform(curr_instance, 0, vox_scene);
 
 		glm::vec4 instance_offset(instance_transform.m30, instance_transform.m31, instance_transform.m32, 0);
-		
+
 		// directly create instance within the vector container w/o a temporary value
 		instances.emplace_back();
 
 		apply_rotations_compute.use();
 		
-		glm::vec3 instance_size;
-		const ogt_vox_model rotated_model = apply_rotations(curr_instance, vox_scene->models, vox_scene->groups, instance_size);
+		glm::ivec3 instance_size;
+		const ogt_vox_model rotated_model = apply_rotations(vox_scene, i, instance_size);
 
 		remap_to_8s_compute.use();
 		instances.back().prepare_model_data(&rotated_model, instance_offset);
@@ -102,32 +112,21 @@ void ComputeScene::render(glm::mat4 mvp, float current_frame)
 	}
 }
 
-ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_instance* instance, const ogt_vox_model** models, const ogt_vox_group* groups, glm::vec3& instance_size)
+ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t instance_idx, glm::ivec3& instance_size)
 {
-	const ogt_vox_model* curr_model = models[instance->model_index];
-
-	glm::mat4 combined_transform = ogt_transform_to_glm(instance->transform);
-
-	uint32_t group_index = instance->group_index;
-
-	while (group_index != k_invalid_group_index) {
-		const ogt_vox_group& curr_group = groups[group_index];
-
-		glm::mat4 group_transform = ogt_transform_to_glm(curr_group.transform);
-		combined_transform = combined_transform * group_transform;
-
-		group_index = curr_group.parent_group_index;
-	}
+	const ogt_vox_instance& instance = scene->instances[instance_idx];
+	const ogt_vox_model* model = scene->models[instance.model_index];
+	glm::mat4& transform_mat = ogt_transform_to_glm(scene, instance, model);
 
 	glm::vec3 corners[8] = {
 		{0, 0, 0},
-		{curr_model->size_x, 0, 0},
-		{0, curr_model->size_y, 0},
-		{0, 0, curr_model->size_z},
-		{curr_model->size_x, curr_model->size_y, 0},
-		{curr_model->size_x, 0, curr_model->size_z},
-		{0, curr_model->size_y, curr_model->size_z},
-		{curr_model->size_x, curr_model->size_y, curr_model->size_z},
+		{model->size_x - 1, 0, 0},
+		{0, model->size_y - 1, 0},
+		{0, 0, model->size_z - 1},
+		{model->size_x - 1, model->size_y - 1, 0},
+		{model->size_x - 1, 0, model->size_z - 1},
+		{0, model->size_y - 1, model->size_z - 1},
+		{model->size_x - 1, model->size_y - 1, model->size_z - 1},
 	};
 
 	// transform each corner of bouding box individually
@@ -135,28 +134,29 @@ ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_instance* instance, co
 	glm::vec3 max_bounds(-FLT_MAX);
 
 	for (int i = 0; i < 8; ++i) {
-		glm::vec4 transformed_corner = combined_transform * glm::vec4(corners[i], 1.0f);
-		min_bounds = glm::min(min_bounds, glm::vec3(transformed_corner));
-		max_bounds = glm::max(max_bounds, glm::vec3(transformed_corner));
+		glm::vec4 transformed_corner = transform_mat * glm::vec4(corners[i], 1.0f);
+		glm::vec3 floored_corner = glm::floor(glm::vec3(transformed_corner));
+		min_bounds = glm::min(min_bounds, floored_corner);
+		max_bounds = glm::max(max_bounds, floored_corner);
 	}
 
-	instance_size = max_bounds - min_bounds;
+	instance_size = glm::ivec3(max_bounds - min_bounds) + glm::ivec3(1); // +1 since voxel grids are inclusive
 
 	// apply_rotations_compute
-	const uint8_t* voxel_data = curr_model->voxel_data;
+	const uint8_t* voxel_data = model->voxel_data;
 
 	glCreateBuffers(1, &instance_temp_ssbo);
 	glCreateBuffers(1, &rotated_temp_ssbo);
 
-	glNamedBufferStorage(instance_temp_ssbo, sizeof(uint8_t) * curr_model->size_x * curr_model->size_y * curr_model->size_z, voxel_data, GL_DYNAMIC_STORAGE_BIT);
-	glNamedBufferStorage(rotated_temp_ssbo, sizeof(uint8_t) * curr_model->size_x * curr_model->size_y * curr_model->size_z, nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
+	glNamedBufferStorage(instance_temp_ssbo, sizeof(uint8_t) * model->size_x * model->size_y * model->size_z, voxel_data, GL_DYNAMIC_STORAGE_BIT);
+	glNamedBufferStorage(rotated_temp_ssbo, sizeof(uint8_t) * model->size_x * model->size_y * model->size_z, nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
 	glClearNamedBufferData(rotated_temp_ssbo, GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr); // all values are initially 0. 0 = empty voxel
 
 	RotationData rotation_data{};
-	rotation_data.instance_size = glm::vec4(curr_model->size_x, curr_model->size_y, curr_model->size_z, 1.0);
+	rotation_data.instance_size = glm::vec4(model->size_x, model->size_y, model->size_z, 1.0);
 	rotation_data.rotated_size = glm::vec4(instance_size, 1.0);
-	rotation_data.min_bounds = glm::vec4(min_bounds, 1.0);
-	rotation_data.transform = combined_transform;
+	rotation_data.min_bounds = glm::vec4(min_bounds, 1.0);	
+	rotation_data.transform = transform_mat;
 
 	glCreateBuffers(1, &rotation_data_temp_buffer);
 
@@ -166,8 +166,8 @@ ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_instance* instance, co
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, rotated_temp_ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, rotation_data_temp_buffer);
 
-	// remap_to_8s
-	glDispatchCompute(curr_model->size_x, curr_model->size_y, curr_model->size_z);
+	// apply_rotations_compute
+	glDispatchCompute(model->size_x, model->size_y, model->size_z);
 
 	glMemoryBarrier(
 		GL_SHADER_STORAGE_BARRIER_BIT
