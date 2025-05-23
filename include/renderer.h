@@ -58,7 +58,7 @@ public:
 	//ScreenQuad quad;
 
 	float lastX, lastY, deltaTime, lastFrame;
-	bool firstMouse = true;
+	bool vsync_enabled, wireframe_enabled, firstMouse = true;
 
 private:
 	Renderer() {};

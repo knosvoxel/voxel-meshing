@@ -107,6 +107,26 @@ void Renderer::imgui_render() {
     ImGui::Begin("Model Data", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
     ImGui::Text("Frametime: %.3f ms (FPS %.1f)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::Separator();
+    if (ImGui::Checkbox("VSync", &vsync_enabled))
+    {
+        if (vsync_enabled){
+            glfwSwapInterval(1);
+        }
+        else {
+            glfwSwapInterval(0);
+        }
+    }
+    ImGui::SameLine();
+    if (ImGui::Checkbox("Wireframe", &wireframe_enabled))
+    {
+        if (wireframe_enabled) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+    }
+    ImGui::Separator();
     ImGui::Text("Voxel Count: %1u", compute_scene.voxel_count);
     ImGui::Text("Vertex Count: %1u (%1u faces)", compute_scene.vertex_count, compute_scene.vertex_count / 6);
     ImGui::Separator();
@@ -120,6 +140,8 @@ void Renderer::imgui_render() {
 
 void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool enable_wireframe) {
     window_size = glm::vec2(size_x, size_y);
+    vsync_enabled = enable_vsync;
+    wireframe_enabled = enable_wireframe;
 
     // glfw: initialize and configure
     glfwInit();
