@@ -133,7 +133,7 @@ ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t
 		max_bounds = glm::max(max_bounds, floored_corner);
 	}
 
-	glm::ivec3 instance_size = glm::ivec3(max_bounds - min_bounds) + glm::ivec3(1); // +1 since voxel grids are inclusive
+	glm::ivec3 rotated_instance_size = glm::ivec3(max_bounds - min_bounds) + glm::ivec3(1); // +1 since voxel grids are inclusive
 
 	// apply_rotations_compute
 	const uint8_t* voxel_data = model->voxel_data;
@@ -147,7 +147,7 @@ ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t
 
 	RotationData rotation_data{};
 	rotation_data.instance_size = glm::vec4(model->size_x, model->size_y, model->size_z, 1.0);
-	rotation_data.rotated_size = glm::vec4(instance_size, 1.0);
+	rotation_data.rotated_size = glm::vec4(rotated_instance_size, 1.0);
 	rotation_data.min_bounds = glm::vec4(min_bounds, 1.0);	
 	rotation_data.transform = transform_mat;
 
@@ -169,9 +169,9 @@ ogt_vox_model ComputeScene::apply_rotations(const ogt_vox_scene* scene, uint32_t
 	);
 
 	ogt_vox_model rotated_model{
-		rotated_model.size_x = instance_size.x,
-		rotated_model.size_y = instance_size.y,
-		rotated_model.size_z = instance_size.z,
+		rotated_model.size_x = rotated_instance_size.x,
+		rotated_model.size_y = rotated_instance_size.y,
+		rotated_model.size_z = rotated_instance_size.z,
 		rotated_model.voxel_hash = 0
 	};
 

@@ -131,7 +131,7 @@ void Renderer::imgui_render() {
     ImGui::Text("Vertex Count: %1u (%1u faces)", compute_scene.vertex_count, compute_scene.vertex_count / 6);
     ImGui::Separator();
     ImGui::DragFloat3("Position", (float*)&camera.Position, 0.01f);
-    ImGui::DragFloat("Movement Speed", (float*)&camera.MovementSpeed, 0.01f);
+    ImGui::DragFloat("Movement Speed", (float*)&camera.MovementSpeed, 0.01f, 0.0f, 0.0f, "%.1f"); 
     ImGui::End();
 
     ImGui::Render();
@@ -220,7 +220,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-    compute_scene.load("../res/vox/90mins.vox");
+    compute_scene.load("../res/vox/cube.vox");
     //chunk.generate_buffers();
     //quad.generate_buffers();
 
