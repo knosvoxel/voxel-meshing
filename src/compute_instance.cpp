@@ -112,8 +112,8 @@ void ComputeInstance::generate_mesh(GLuint& vertex_count, ComputeShader& compute
     glCreateBuffers(1, &vbo);
     glCreateBuffers(1, &indirect_command);
 
-    glNamedBufferStorage(vbo, sizeof(Vertex) * vbo_size // * 32: Left out but technically required
-        , nullptr, GL_DYNAMIC_STORAGE_BIT);
+    //glNamedBufferStorage(vbo, sizeof(Vertex) * vbo_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(vbo, sizeof(Vertex) * size_x * size_y * size_z * 32, nullptr, GL_DYNAMIC_STORAGE_BIT); // TODO: temporary
     glNamedBufferStorage(indirect_command, sizeof(DrawArraysIndirectCommand), &indirect_data,
         GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
 
@@ -138,7 +138,8 @@ void ComputeInstance::generate_mesh(GLuint& vertex_count, ComputeShader& compute
     compute.use();
 
     // compute
-    glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);
+    //glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);
+    glDispatchCompute(size_x / 8, 1, size_z / 8);
 
     glMemoryBarrier(
         GL_SHADER_STORAGE_BARRIER_BIT |

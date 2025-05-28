@@ -31,7 +31,12 @@ public:
 			instances = std::move(other.instances);
 			palette = other.palette;
 			shader = std::move(other.shader);
+			remap_to_8s_compute = std::move(other.remap_to_8s_compute);
+			apply_rotations_compute = std::move(other.apply_rotations_compute);
+			buffer_size_compute = std::move(other.buffer_size_compute);
 			meshing_compute = std::move(other.meshing_compute);
+			greedy_8x8_compute = std::move(other.greedy_8x8_compute);
+			slicing = std::move(other.slicing);
 
 			// Leave the other object in a valid state
 			other.palette = 0;
@@ -49,5 +54,5 @@ public:
 	GLuint palette, voxel_count, vertex_count, instance_temp_ssbo, rotated_temp_ssbo, rotation_data_temp_buffer;
 
 	Shader shader;
-	ComputeShader remap_to_8s_compute, apply_rotations_compute, buffer_size_compute, meshing_compute, greedy_8x8_compute;
+	ComputeShader remap_to_8s_compute, apply_rotations_compute, buffer_size_compute, meshing_compute, greedy_8x8_compute, slicing;
 };
