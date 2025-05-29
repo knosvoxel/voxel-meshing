@@ -36,17 +36,34 @@ ComputeScene::~ComputeScene(){
 	glDeleteTextures(1, &palette);
 }
 
-void ComputeScene::load(const char* path)
+void ComputeScene::load(const char* path, MeshingAlgorithm algo)
 {
+	// 2D compute dispatch? -- only required for slicing algorithm
+	bool flat_dispatch = false;
+
 	shader = Shader("../shaders/compute/compute_instance.vert", "../shaders/compute/compute_instance.frag");
 
 	apply_rotations_compute = ComputeShader("../shaders/compute/apply_rotations.comp");
 	remap_to_8s_compute = ComputeShader("../shaders/compute/remap_to_8s.comp");
 	buffer_size_compute = ComputeShader("../shaders/compute/calculate_buffer_size.comp");
 
-	meshing_compute = ComputeShader("../shaders/compute/compute_instance.comp");
-	greedy_8x8_compute = ComputeShader("../shaders/compute/compute_instance_greedy_8x8.comp");
-	slicing = ComputeShader("../shaders/compute/compute_instance_slicing.comp");
+	// create compute shader based on selected algorithm
+	switch (algo)
+	{
+	case default:
+		meshing_compute = ComputeShader("../shaders/compute/compute_instance.comp");
+		break;
+	case greedy_8x8:
+		meshing_compute = ComputeShader("../shaders/compute/compute_instance_greedy_8x8.comp");
+		break;
+	case slicing:
+		meshing_compute = ComputeShader("../shaders/compute/compute_instance_slicing.comp");
+		flat_dispatch = true;
+		break;
+	default:
+		meshing_compute = ComputeShader("../shaders/compute/compute_instance.comp");
+		break;
+	}
 
 	const ogt_vox_scene* vox_scene = load_vox_scene(path);
 
@@ -65,7 +82,8 @@ void ComputeScene::load(const char* path)
 		const ogt_vox_model rotated_model = apply_rotations(vox_scene, i, apply_rotations_compute);
 		instances.back().prepare_model_data(&rotated_model, instance_offset, remap_to_8s_compute);
 		instances.back().calculate_buffer_size(&rotated_model, voxel_count, buffer_size_compute);
-		instances.back().generate_mesh(vertex_count, slicing);
+
+		instances.back().generate_mesh(vertex_count, meshing_compute, flat_dispatch);
 	}
 
 	// load palette into texture

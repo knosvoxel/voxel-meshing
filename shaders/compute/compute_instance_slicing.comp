@@ -161,7 +161,6 @@ void main() {
             vertices[local_base_idx + 3] = v10;
             vertices[local_base_idx + 4] = v11;
             vertices[local_base_idx + 5] = v12;
-       
        }
             
         
