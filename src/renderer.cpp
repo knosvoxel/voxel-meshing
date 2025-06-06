@@ -220,7 +220,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-    compute_scene.load("../res/vox/cube.vox", slicing);
+    compute_scene.load("../res/vox/45mins.vox", slicing);
     //chunk.generate_buffers();
     //quad.generate_buffers();
 
