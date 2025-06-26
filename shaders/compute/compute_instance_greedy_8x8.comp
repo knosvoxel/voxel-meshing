@@ -204,6 +204,8 @@ void main() {
             }
         }
 
+        barrier();
+
         //   face x0  //
 
         // check if 2x2 group of voxels has been processed yet
