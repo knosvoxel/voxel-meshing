@@ -70,7 +70,7 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 	const uint32_t num_instances = vox_scene->num_instances;
 
 	std::cout << iterations_per_instance << " iterations per instance" << std::endl;
-	std::cout << vox_scene->num_instances << " instances" << std::endl;;
+	std::cout << vox_scene->num_instances << " instance(s)" << std::endl;;
 
 	double total_duration = 0.0;
 
