@@ -69,7 +69,8 @@ public:
 
 	void prepare_model_data(const ogt_vox_model* model, glm::vec4 offset, ComputeShader& compute);
 	void calculate_buffer_size(const ogt_vox_model* model, GLuint& voxel_count, ComputeShader& compute);
-	void generate_mesh(GLuint& vertex_count, ComputeShader& compute, bool flat_dispatch);
+	void generate_mesh(GLuint& vertex_count, ComputeShader& compute, bool flat_dispatch, double& dispatch_duration);
+	void clear_model_data();
 
 	void render();
 

@@ -36,7 +36,7 @@ ComputeScene::~ComputeScene(){
 	glDeleteTextures(1, &palette);
 }
 
-void ComputeScene::load(const char* path, MeshingAlgorithm algo)
+void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iterations_per_instance)
 {
 	// 2D compute dispatch? -- only required for slicing algorithm
 	bool flat_dispatch = false;
@@ -67,8 +67,15 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo)
 
 	const ogt_vox_scene* vox_scene = load_vox_scene(path);
 
+	const uint32_t num_instances = vox_scene->num_instances;
+
+	std::cout << iterations_per_instance << " iterations per instance" << std::endl;
+	std::cout << vox_scene->num_instances << " instances" << std::endl;;
+
+	double total_duration = 0.0;
+
 	// load instances
-	for (size_t i = 0; i < vox_scene->num_instances; i++)
+	for (size_t i = 0; i < num_instances; i++)
 	{
 		const ogt_vox_instance* curr_instance = &vox_scene->instances[i]; // currently only with one instance
 		const ogt_vox_model* curr_model = vox_scene->models[curr_instance->model_index];
@@ -83,8 +90,25 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo)
 		instances.back().prepare_model_data(&rotated_model, instance_offset, remap_to_8s_compute);
 		instances.back().calculate_buffer_size(&rotated_model, voxel_count, buffer_size_compute);
 
-		instances.back().generate_mesh(vertex_count, meshing_compute, flat_dispatch);
+		for (size_t i = 0; i < iterations_per_instance; i++)
+		{
+			// reset vertex count and clear model data at beginning 
+			// of each loop to retrieve correct values after loop
+			if (iterations_per_instance > 1) {
+				vertex_count = 0;
+				instances.back().clear_model_data();
+			}
+
+			double instance_dispatch_duration = 0.0;
+			instances.back().generate_mesh(vertex_count, meshing_compute, flat_dispatch, instance_dispatch_duration);
+
+			total_duration += instance_dispatch_duration;
+		}
+
 	}
+
+	std::cout << "Total meshing duration: " << total_duration << "us (" << total_duration / 1000.0 << "ms)" << std::endl;
+	std::cout << "Average meshing duration: " << (total_duration / iterations_per_instance) / num_instances << " us" << std::endl;
 
 	// load palette into texture
 	ogt_vox_palette ogt_palette = vox_scene->palette;

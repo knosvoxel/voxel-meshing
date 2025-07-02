@@ -48,7 +48,7 @@ public:
 		return *this;
 	}
 
-	void load(const char* path, MeshingAlgorithm algo);
+	void load(const char* path, MeshingAlgorithm algo, size_t iterations_per_instance = 1);
 	void render(glm::mat4 mvp, float current_frame);
 
 	ogt_vox_model apply_rotations(const ogt_vox_scene* scene, uint32_t instance_idx, ComputeShader& compute);

@@ -100,7 +100,7 @@ void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& 
 }
 
 // Called third: fills VBO with data
-void ComputeInstance::generate_mesh(GLuint& vertex_count, ComputeShader& compute, bool flat_dispatch) {
+void ComputeInstance::generate_mesh(GLuint& vertex_count, ComputeShader& compute, bool flat_dispatch, double& dispatch_duration) {
     DrawArraysIndirectCommand indirect_data{};
     indirect_data.count = 0;
     indirect_data.instanceCount = 1;
@@ -113,7 +113,6 @@ void ComputeInstance::generate_mesh(GLuint& vertex_count, ComputeShader& compute
     glCreateBuffers(1, &indirect_command);
 
     glNamedBufferStorage(vbo, sizeof(Vertex) * vbo_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
-    //glNamedBufferStorage(vbo, sizeof(Vertex) * size_x * size_y * size_z * 32, nullptr, GL_DYNAMIC_STORAGE_BIT); // TODO: temporary
     glNamedBufferStorage(indirect_command, sizeof(DrawArraysIndirectCommand), &indirect_data,
         GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT);
 
@@ -137,6 +136,10 @@ void ComputeInstance::generate_mesh(GLuint& vertex_count, ComputeShader& compute
 
     compute.use();
 
+    GLuint meshing_query;
+    glGenQueries(1, &meshing_query);
+    glBeginQuery(GL_TIME_ELAPSED, meshing_query);
+
     // compute
     if (flat_dispatch) {
         glDispatchCompute(size_x / 8, 1, size_z / 8);
@@ -144,6 +147,8 @@ void ComputeInstance::generate_mesh(GLuint& vertex_count, ComputeShader& compute
     else{
         glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);
     }
+
+    glEndQuery(GL_TIME_ELAPSED);
 
     glMemoryBarrier(
         GL_SHADER_STORAGE_BARRIER_BIT |
@@ -158,7 +163,24 @@ void ComputeInstance::generate_mesh(GLuint& vertex_count, ComputeShader& compute
         vertex_count += command_data->count;
         glUnmapNamedBuffer(indirect_command);
     }
+
+    GLint available = 0;
+    while (!available) {
+        glGetQueryObjectiv(meshing_query, GL_QUERY_RESULT_AVAILABLE, &available);
+    }
+
+    GLuint64 elapsedGPU;
+    glGetQueryObjectui64v(meshing_query, GL_QUERY_RESULT, &elapsedGPU);
+    // dispatch time in us
+    dispatch_duration = elapsedGPU / 1e3;
 };
+
+// call before generate_mesh() if generate_mesh() was already called before
+void ComputeInstance::clear_model_data() {
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &indirect_command);
+}
 
 void ComputeInstance::render()
 {
