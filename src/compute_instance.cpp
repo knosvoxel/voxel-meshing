@@ -10,7 +10,7 @@ ComputeInstance::~ComputeInstance()
 }
 
 // Called first: remaps voxel data to multiples of 8
-void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 offset, ComputeShader& compute)
+void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 offset, ComputeShader& compute, double& dispatch_duration)
 {
     uint32_t model_size_x = model->size_x;
     uint32_t model_size_y = model->size_y;
@@ -44,19 +44,36 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
 
     compute.use();
 
+
+    GLuint meshing_query;
+    glGenQueries(1, &meshing_query);
+    glBeginQuery(GL_TIME_ELAPSED, meshing_query);
+
     // remap_to_8s
     glDispatchCompute(model_size_x, model_size_y, model_size_z);
+
+    glEndQuery(GL_TIME_ELAPSED);
 
     glMemoryBarrier(
         GL_SHADER_STORAGE_BARRIER_BIT
     );
+
+    GLint available = 0;
+    while (!available) {
+        glGetQueryObjectiv(meshing_query, GL_QUERY_RESULT_AVAILABLE, &available);
+    }
+
+    GLuint64 elapsedGPU;
+    glGetQueryObjectui64v(meshing_query, GL_QUERY_RESULT, &elapsedGPU);
+    // dispatch time in us
+    dispatch_duration = elapsedGPU / 1000;
 
     glDeleteBuffers(1, &voxel_ssbo);
 }
 
 
 // Called second: Calculates required VBO size
-void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& voxel_count, ComputeShader& compute)
+void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& voxel_count, ComputeShader& compute, double& dispatch_duration)
 {
     glCreateBuffers(1, &vbo_size_buffer);
 
@@ -69,12 +86,28 @@ void ComputeInstance::calculate_buffer_size(const ogt_vox_model* model, GLuint& 
 
     compute.use();
 
+    GLuint meshing_query;
+    glGenQueries(1, &meshing_query);
+    glBeginQuery(GL_TIME_ELAPSED, meshing_query);
+
     glDispatchCompute(size_x / 8, size_y / 8, size_z / 8);
+
+    glEndQuery(GL_TIME_ELAPSED);
 
     // buffer_size_compute
     glMemoryBarrier(
         GL_SHADER_STORAGE_BARRIER_BIT
     );
+
+    GLint available = 0;
+    while (!available) {
+        glGetQueryObjectiv(meshing_query, GL_QUERY_RESULT_AVAILABLE, &available);
+    }
+
+    GLuint64 elapsedGPU;
+    glGetQueryObjectui64v(meshing_query, GL_QUERY_RESULT, &elapsedGPU);
+    // dispatch time in us
+    dispatch_duration = elapsedGPU / 1000;
 
     void* vbo_size_ptr = glMapNamedBufferRange(vbo_size_buffer, 0, sizeof(GLuint),
         GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
@@ -172,7 +205,7 @@ void ComputeInstance::generate_mesh(GLuint& vertex_count, ComputeShader& compute
     GLuint64 elapsedGPU;
     glGetQueryObjectui64v(meshing_query, GL_QUERY_RESULT, &elapsedGPU);
     // dispatch time in us
-    dispatch_duration = elapsedGPU / 1e3;
+    dispatch_duration = elapsedGPU / 1000;
 };
 
 // call before generate_mesh() if generate_mesh() was already called before

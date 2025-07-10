@@ -69,10 +69,15 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 
 	const uint32_t num_instances = vox_scene->num_instances;
 
-	std::cout << iterations_per_instance << " iterations per instance" << std::endl;
-	std::cout << vox_scene->num_instances << " instance(s)" << std::endl;;
+	std::cout << iterations_per_instance << " meshing iterations per instance" << std::endl;
+	std::cout << vox_scene->num_instances << " instance(s)\n" << std::endl;;
 
-	double total_duration = 0.0;
+	double total_remap_duration = 0.0;
+	double total_size_calculation_duration = 0.0;
+	double total_meshing_duration = 0.0;
+	uint64_t total_size_x = 0;
+	uint64_t total_size_y = 0;
+	uint64_t total_size_z = 0;
 
 	// load instances
 	for (size_t i = 0; i < num_instances; i++)
@@ -83,13 +88,24 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 		ogt_vox_transform instance_transform = ogt_vox_sample_instance_transform(curr_instance, 0, vox_scene);
 
 		glm::vec4 instance_offset(instance_transform.m30, instance_transform.m31, instance_transform.m32, 0);
+		
+		total_size_x += curr_model->size_y;
+		total_size_y += curr_model->size_z;
+		total_size_z += curr_model->size_x;
+
+		double model_data_remap_duration = 0.0;
+		double buffer_size_calculation_duration = 0.0;
 
 		// directly create instance within the vector container w/o a temporary value
 		instances.emplace_back();
 		const ogt_vox_model rotated_model = apply_rotations(vox_scene, i, apply_rotations_compute);
-		instances.back().prepare_model_data(&rotated_model, instance_offset, remap_to_8s_compute);
-		instances.back().calculate_buffer_size(&rotated_model, voxel_count, buffer_size_compute);
+		instances.back().prepare_model_data(&rotated_model, instance_offset, remap_to_8s_compute, model_data_remap_duration);
+		instances.back().calculate_buffer_size(&rotated_model, voxel_count, buffer_size_compute, buffer_size_calculation_duration);
 
+		total_remap_duration += model_data_remap_duration;
+		total_size_calculation_duration += buffer_size_calculation_duration;
+
+		// do meshing multiple times for performance testing
 		for (size_t i = 0; i < iterations_per_instance; i++)
 		{
 			// reset vertex count and clear model data at beginning 
@@ -102,13 +118,26 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 			double instance_dispatch_duration = 0.0;
 			instances.back().generate_mesh(vertex_count, meshing_compute, flat_dispatch, instance_dispatch_duration);
 
-			total_duration += instance_dispatch_duration;
+			total_meshing_duration += instance_dispatch_duration;
 		}
 
 	}
 
-	std::cout << "Total meshing duration: " << total_duration << "us (" << total_duration / 1000.0 << "ms)" << std::endl;
-	std::cout << "Average meshing duration: " << (total_duration / iterations_per_instance) / num_instances << " us" << std::endl;
+	std::cout << "Average chunk size: " << total_size_x / num_instances << " " << total_size_y / num_instances << " "
+		<< total_size_z / num_instances << "\n" << std::endl;
+
+	std::cout << "Remap duration: " << std::endl;
+	std::cout << " Total: " << total_remap_duration << "us (" << total_remap_duration / 1000.0 << "ms)" << std::endl;
+	std::cout << " Average: " << total_remap_duration / num_instances << "us\n" << std::endl;
+
+	std::cout << "Size calculation duration: " << std::endl;
+	std::cout << " Total: " << total_size_calculation_duration << "us (" << total_size_calculation_duration / 1000.0 << "ms)" << std::endl;
+	std::cout << " Average: " << total_size_calculation_duration / num_instances << "us\n" << std::endl;
+
+	std::cout << "Meshing duration: " << std::endl;
+	std::cout << " Total: " << total_meshing_duration << "us (" << total_meshing_duration / 1000.0 << "ms)" << std::endl;
+	std::cout << " Average: " << (total_meshing_duration / iterations_per_instance) / num_instances << "us" << std::endl;
+
 
 	// load palette into texture
 	ogt_vox_palette ogt_palette = vox_scene->palette;
