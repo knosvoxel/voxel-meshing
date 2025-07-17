@@ -41,6 +41,7 @@ public:
 	Renderer(Renderer const&) = delete;
 	void operator=(Renderer const&) = delete;
 
+	void configure_algorithm(const char* file_path_to_load, MeshingAlgorithm algorithm, uint16_t meshing_iteration_amount);
 	void init(uint16_t size_x, uint16_t size_y, bool enable_vsync = true, bool enable_wireframe = false);
 	void loop();
 	void processInput();
@@ -56,6 +57,10 @@ public:
 
 	Line coord_x, coord_y, coord_z;
 	//ScreenQuad quad;
+
+	const char* vox_file_path = "";
+	MeshingAlgorithm algorithm = greedy_8x8;
+	uint16_t meshing_iterations = 0;
 
 	float lastX, lastY, deltaTime, lastFrame;
 	bool vsync_enabled, wireframe_enabled, firstMouse = true;

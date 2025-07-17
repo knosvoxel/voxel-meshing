@@ -138,6 +138,13 @@ void Renderer::imgui_render() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
+void Renderer::configure_algorithm(const char* file_path_to_load, MeshingAlgorithm algorithm, uint16_t meshing_iteration_amount)
+{
+    vox_file_path = file_path_to_load;
+    this->algorithm = algorithm;
+    meshing_iterations = meshing_iteration_amount;
+}
+
 void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool enable_wireframe) {
     window_size = glm::vec2(size_x, size_y);
     vsync_enabled = enable_vsync;
@@ -220,11 +227,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     
     // set up vertex data (and buffer(s)) and configure vertex attributes
     //-----------------------------------------------------------------
-    const char* file_path_to_load = "../res/vox/sphere.vox";
-    MeshingAlgorithm algorithm = greedy_8x8;
-    uint16_t meshing_iterations = 1;
-
-    compute_scene.load(file_path_to_load, algorithm, meshing_iterations);
+    compute_scene.load(vox_file_path, algorithm, meshing_iterations);
     //chunk.generate_buffers();
     //quad.generate_buffers();
 
