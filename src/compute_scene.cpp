@@ -67,6 +67,12 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 
 	const ogt_vox_scene* vox_scene = load_vox_scene(path);
 
+	if (vox_scene == nullptr)
+	{
+		std::cout << "Failed to load vox file at path: " << path << std::endl;
+		exit(-1);
+	}
+
 	const uint32_t num_instances = vox_scene->num_instances;
 
 	std::cout << iterations_per_instance << " meshing iterations per instance" << std::endl;
