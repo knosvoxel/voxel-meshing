@@ -215,11 +215,27 @@ void ComputeInstance::clear_model_data() {
     glDeleteBuffers(1, &indirect_command);
 }
 
-void ComputeInstance::render()
+void ComputeInstance::render(double& render_duration)
 {
+    GLuint render_query;
+    glGenQueries(1, &render_query);
+    glBeginQuery(GL_TIME_ELAPSED, render_query);
+
     glBindVertexArray(vao);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_command);
     glDrawArraysIndirect(GL_TRIANGLES, 0);
 
     glBindVertexArray(0);
+
+    glEndQuery(GL_TIME_ELAPSED);
+
+    GLint available = 0;
+    while (!available) {
+        glGetQueryObjectiv(render_query, GL_QUERY_RESULT_AVAILABLE, &available);
+    }
+
+    GLuint64 elapsedGPU;
+    glGetQueryObjectui64v(render_query, GL_QUERY_RESULT, &elapsedGPU);
+    // dispatch time in us
+    render_duration = elapsedGPU / 1000;
 }

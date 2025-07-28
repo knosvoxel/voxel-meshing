@@ -73,7 +73,7 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 		exit(-1);
 	}
 
-	const uint32_t num_instances = vox_scene->num_instances;
+	num_instances = vox_scene->num_instances;
 
 	std::cout << iterations_per_instance << " meshing iterations per instance" << std::endl;
 	std::cout << vox_scene->num_instances << " instance(s)\n" << std::endl;;
@@ -142,7 +142,7 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 
 	std::cout << "Meshing duration: " << std::endl;
 	std::cout << " Total: " << total_meshing_duration << "us (" << total_meshing_duration / 1000.0 << "ms)" << std::endl;
-	std::cout << " Average: " << (total_meshing_duration / iterations_per_instance) / num_instances << "us" << std::endl;
+	std::cout << " Average: " << (total_meshing_duration / iterations_per_instance) / num_instances << "us\n\n" << std::endl;
 
 
 	// load palette into texture
@@ -175,9 +175,13 @@ void ComputeScene::render(glm::mat4 mvp, float current_frame)
 
 	shader.setMat4("mvp", mvp);
 
+	total_draw_call_duration = 0.0;
+
 	for (ComputeInstance& instance : instances)
 	{
-		instance.render();
+		double draw_call_duration;
+		instance.render(draw_call_duration);
+		total_draw_call_duration += draw_call_duration;
 	}
 }
 

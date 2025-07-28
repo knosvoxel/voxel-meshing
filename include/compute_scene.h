@@ -57,6 +57,9 @@ public:
 
 	GLuint palette, voxel_count, vertex_count, instance_temp_ssbo, rotated_temp_ssbo, rotation_data_temp_buffer;
 
+	uint32_t num_instances;
+	double total_draw_call_duration;
+
 	Shader shader;
 	ComputeShader remap_to_8s_compute, apply_rotations_compute, buffer_size_compute, meshing_compute;
 };

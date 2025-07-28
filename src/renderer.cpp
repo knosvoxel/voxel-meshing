@@ -106,6 +106,8 @@ void Renderer::imgui_render() {
 
     ImGui::Begin("Model Data", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
     ImGui::Text("Frametime: %.3f ms (FPS %.1f)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::Text("Total Draw Call Duration: %.1f us", compute_scene.total_draw_call_duration);
+    ImGui::Text("Average Draw Call Duration: %.1f us", compute_scene.total_draw_call_duration / compute_scene.num_instances);
     ImGui::Separator();
     if (ImGui::Checkbox("VSync", &vsync_enabled))
     {
