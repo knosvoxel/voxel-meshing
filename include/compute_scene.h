@@ -9,6 +9,7 @@
 #include "learnopengl/compute.h"
 
 #include <vector>
+#include<algorithm>
 
 #include "compute_instance.h"
 

@@ -8,7 +8,7 @@ bool wireframe_enabled = false;
 
 const char* vox_file_path = "../res/vox/sphere.vox";
 MeshingAlgorithm algorithm = slicing;
-uint16_t meshing_iterations = 1;
+uint16_t meshing_iterations = 1000;
 
 int main() {
     Renderer::getInstance().configure_algorithm(vox_file_path, algorithm, meshing_iterations);

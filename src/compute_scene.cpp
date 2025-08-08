@@ -81,6 +81,10 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 	double total_remap_duration = 0.0;
 	double total_size_calculation_duration = 0.0;
 	double total_meshing_duration = 0.0;
+	double min_meshing_duration = DBL_MAX;
+	double max_meshing_duration = 0.0;
+	std::vector<double> meshing_durations(iterations_per_instance);
+
 	uint64_t total_size_x = 0;
 	uint64_t total_size_y = 0;
 	uint64_t total_size_z = 0;
@@ -125,6 +129,9 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 			instances.back().generate_mesh(vertex_count, meshing_compute, flat_dispatch, instance_dispatch_duration);
 
 			total_meshing_duration += instance_dispatch_duration;
+			if (instance_dispatch_duration < min_meshing_duration) min_meshing_duration = instance_dispatch_duration;
+			if (instance_dispatch_duration > max_meshing_duration) max_meshing_duration = instance_dispatch_duration;
+			meshing_durations[i] = instance_dispatch_duration;
 		}
 
 	}
@@ -140,10 +147,40 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 	std::cout << " Total: " << total_size_calculation_duration << "us (" << total_size_calculation_duration / 1000.0 << "ms)" << std::endl;
 	std::cout << " Average: " << total_size_calculation_duration / num_instances << "us\n" << std::endl;
 
+	double mean = (total_meshing_duration / iterations_per_instance) / num_instances;
+
 	std::cout << "Meshing duration: " << std::endl;
 	std::cout << " Total: " << total_meshing_duration << "us (" << total_meshing_duration / 1000.0 << "ms)" << std::endl;
-	std::cout << " Average: " << (total_meshing_duration / iterations_per_instance) / num_instances << "us\n\n" << std::endl;
+	std::cout << " Average: " << mean << "us" << std::endl;
+	// TODO: Not per instance yet
+	std::cout << " Min: " << (min_meshing_duration) << "us" << std::endl;
+	std::cout << " Max: " << (max_meshing_duration) << "us" << std::endl;
 
+	std::sort(meshing_durations.begin(), meshing_durations.end());
+
+	double median = 0.0;
+
+	if (iterations_per_instance % 2 == 0) {
+		median = (meshing_durations[iterations_per_instance / 2 + 1] + meshing_durations[iterations_per_instance / 2]) / 2.0;
+	}
+	else {
+		median = meshing_durations[iterations_per_instance / 2];
+	}
+
+	std::cout << " Median: " << median << "us" << std::endl;
+
+	double variance = 0.0;
+	double standard_deviation = 0.0;
+
+	for each(double duration in meshing_durations)
+	{
+		variance += (duration - mean) * (duration - mean);
+	}
+
+	variance /= iterations_per_instance;
+	standard_deviation = glm::sqrt(variance);
+	
+	std::cout << " Standard Deviation: " << standard_deviation << "us\n\n" << std::endl;
 
 	// load palette into texture
 	ogt_vox_palette ogt_palette = vox_scene->palette;
