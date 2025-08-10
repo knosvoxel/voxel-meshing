@@ -116,7 +116,7 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 		total_size_calculation_duration += buffer_size_calculation_duration;
 
 		// do meshing multiple times for performance testing
-		for (size_t i = 0; i < iterations_per_instance; i++)
+		for (size_t j = 0; j < iterations_per_instance; j++)
 		{
 			// reset vertex count and clear model data at beginning 
 			// of each loop to retrieve correct values after loop
@@ -131,7 +131,8 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 			total_meshing_duration += instance_dispatch_duration;
 			if (instance_dispatch_duration < min_meshing_duration) min_meshing_duration = instance_dispatch_duration;
 			if (instance_dispatch_duration > max_meshing_duration) max_meshing_duration = instance_dispatch_duration;
-			meshing_durations[i] = instance_dispatch_duration;
+			// meshing durations per iteration only measure for first model instance in a vox file
+			if (i == 0) meshing_durations[j] = instance_dispatch_duration;
 		}
 
 	}
@@ -167,7 +168,7 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 		median = meshing_durations[iterations_per_instance / 2];
 	}
 
-	std::cout << " Median: " << median << "us" << std::endl;
+	std::cout << " Median (instance 0): " << median << "us" << std::endl;
 
 	double variance = 0.0;
 	double standard_deviation = 0.0;
@@ -180,7 +181,7 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 	variance /= iterations_per_instance;
 	standard_deviation = glm::sqrt(variance);
 	
-	std::cout << " Standard Deviation: " << standard_deviation << "us\n\n" << std::endl;
+	std::cout << " Standard Deviation (instance 0): " << standard_deviation << "us\n\n" << std::endl;
 
 	// load palette into texture
 	ogt_vox_palette ogt_palette = vox_scene->palette;
