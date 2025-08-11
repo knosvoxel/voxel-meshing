@@ -66,7 +66,7 @@ void ComputeInstance::prepare_model_data(const ogt_vox_model* model, glm::vec4 o
     GLuint64 elapsedGPU;
     glGetQueryObjectui64v(meshing_query, GL_QUERY_RESULT, &elapsedGPU);
     // dispatch time in us
-    dispatch_duration = elapsedGPU / 1000;
+    dispatch_duration = elapsedGPU / 1000.0;
 
     glDeleteBuffers(1, &voxel_ssbo);
 }

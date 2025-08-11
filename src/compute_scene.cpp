@@ -153,7 +153,7 @@ void ComputeScene::load(const char* path, MeshingAlgorithm algo, size_t iteratio
 	std::cout << "Meshing duration: " << std::endl;
 	std::cout << " Total: " << total_meshing_duration << "us (" << total_meshing_duration / 1000.0 << "ms)" << std::endl;
 	std::cout << " Average: " << mean << "us" << std::endl;
-	// TODO: Not per instance yet
+
 	std::cout << " Min: " << (min_meshing_duration) << "us" << std::endl;
 	std::cout << " Max: " << (max_meshing_duration) << "us" << std::endl;
 

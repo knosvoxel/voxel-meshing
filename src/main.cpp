@@ -7,7 +7,7 @@ bool vsync_enabled = true;
 bool wireframe_enabled = false;
 
 const char* vox_file_path = "../res/vox/sphere.vox";
-MeshingAlgorithm algorithm = slicing;
+MeshingAlgorithm algorithm = greedy_8x8;
 uint16_t meshing_iterations = 1000;
 
 int main() {
