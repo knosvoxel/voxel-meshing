@@ -197,6 +197,7 @@ void Renderer::init(uint16_t size_x, uint16_t size_y, bool enable_vsync, bool en
     //glDebugMessageCallback(message_callback, 0);
 
     // overdraw debug visuals
+    // also adjust the shader in compute_scene.cpp to use overdraw.frag for this to work correctly
     //glEnable(GL_BLEND);
     //glDepthFunc(GL_ALWAYS);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
